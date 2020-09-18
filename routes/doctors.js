@@ -25,24 +25,21 @@ router.use('/:doctorId/schedules', scheduleRouter)
 router.use('/schedules', scheduleRouter)
 router.use('/appointments/:appointmentId/qr', appointmentRouter)
 
-router
-  .route('/:id/photo')
-  .get(doctors.doctorPhotoRetrieve)
-  .put(
-    protect,
-    authorize('admin', 'doctor'),
-    multer({
-      storage: multer.diskStorage({
-        destination: (req, file, cb) => {
-          cb(null, path.join(__dirname, '../', 'public', 'uploads'))
-        },
-        filename: (req, file, cb) => {
-          cb(null, req.user.id + '-' + file.originalname)
-        }
-      })
-    }).single('file'),
-    doctors.doctorPhotoUpload
-  )
+router.route('/:id/photo').put(
+  protect,
+  authorize('admin', 'doctor'),
+  multer({
+    storage: multer.diskStorage({
+      destination: (req, file, cb) => {
+        cb(null, path.join(__dirname, '../', 'public', 'uploads'))
+      },
+      filename: (req, file, cb) => {
+        cb(null, req.user.id + '-' + file.originalname)
+      }
+    })
+  }).single('file'),
+  doctors.doctorPhotoUpload
+)
 
 router
   .route('/radius/:latitude/:longitude/:distance')
