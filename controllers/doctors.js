@@ -1,331 +1,310 @@
-import path from 'path';
-import ErrorResponse from '../utils/errorResponse.js';
-import asyncHandler from '../middleware/async.js';
-import Doctor from '../models/Doctor.js';
-
-
+import ErrorResponse from '../utils/errorResponse.js'
+import asyncHandler from '../middleware/async.js'
+import Doctor from '../models/Doctor.js'
 
 // Get token from model, create cookie and send response
 const sendTokenResponse = (user, statusCode, res) => {
   // Create token
-  const token = user.getSignedJwtToken();
+  const token = user.getSignedJwtToken()
 
   const options = {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
     ),
     httpOnly: true
-  };
+  }
 
   if (process.env.NODE_ENV === 'production') {
-    options.secure = true;
+    options.secure = true
   }
 
-  res
-    .status(statusCode)
-    .cookie('token', token, options)
-    .json({
-      success: true,
-      token
-    });
-};
-
-
+  res.status(statusCode).cookie('token', token, options).json({
+    success: true,
+    token
+  })
+}
 
 export default {
+  // @desc    Get all Doctors
+  // @route   GET /api/v1/doctors
+  // @access  Public
 
-// @desc    Get all Doctors
-// @route   GET /api/v1/doctors
-// @access  Public
+  getDoctors: asyncHandler(async (req, res, next) => {
+    res.status(200).json(res.advancedResults)
+  }),
 
-getDoctors : asyncHandler(async (req, res, next) => {
-  res.status(200).json(res.advancedResults);
-}),
+  // @desc    Get single Doctor
+  // @route   GET /api/v1/doctors/:id
+  // @access  Public
 
-// @desc    Get single Doctor
-// @route   GET /api/v1/doctors/:id
-// @access  Public
-
-getDoctor : asyncHandler(async (req, res, next) => {
-  const doctor = await Doctor.findById(req.params.id);
-  if (!doctor) {
-    return next(
-      new ErrorResponse(
-        `doctor is not found with id of ${req.params.id}`,
-        404
+  getDoctor: asyncHandler(async (req, res, next) => {
+    const doctor = await Doctor.findById(req.params.id)
+    if (!doctor) {
+      return next(
+        new ErrorResponse(
+          `doctor is not found with id of ${req.params.id}`,
+          404
+        )
       )
-    );
-  }
-  res.status(200).json({
-    success: true,
-    data: doctor
-  });
-}),
+    }
+    res.status(200).json({
+      success: true,
+      data: doctor
+    })
+  }),
 
-// @desc    Create new Doctor
-// @route   POST /api/v1/doctors
-// @access  Private
+  // @desc    Create new Doctor
+  // @route   POST /api/v1/doctors
+  // @access  Private
 
-createDoctor : asyncHandler(async (req, res, next) => {
-  // Add user to req,body
-  req.body.user = req.user.id;
+  createDoctor: asyncHandler(async (req, res, next) => {
+    // Add user to req,body
+    req.body.user = req.user.id
 
-
-  // If the user is not an admin, they can't create doctor
-  if (req.user.role !== 'admin') {
-    return next(
-      new ErrorResponse(
-        `The user with ID ${req.user.id} don't have access to create doctor`,
-        400
+    // If the user is not an admin, they can't create doctor
+    if (req.user.role !== 'admin') {
+      return next(
+        new ErrorResponse(
+          `The user with ID ${req.user.id} don't have access to create doctor`,
+          400
+        )
       )
-    );
-  }
-  const doctor = await Doctor.create(req.body);
-  res.status(201).json({
-    success: true,
-    data: doctor 
-  });
-}),
+    }
+    const doctor = await Doctor.create(req.body)
+    res.status(201).json({
+      success: true,
+      data: doctor
+    })
+  }),
 
-// @desc    Update Doctor
-// @route   PUT /api/v1/doctors/:id
-// @access  Private
+  // @desc    Update Doctor
+  // @route   PUT /api/v1/doctors/:id
+  // @access  Private
 
-updateDoctor : asyncHandler(async (req, res, next) => {
- 
-  const doctor = await Doctor.findById(req.params.id);
-  
-  if (!doctor) {
-    return next(
-      new ErrorResponse(
-        `doctor is not found with id of ${req.params.id}`,
-        404
+  updateDoctor: asyncHandler(async (req, res, next) => {
+    const doctor = await Doctor.findById(req.params.id)
+
+    if (!doctor) {
+      return next(
+        new ErrorResponse(
+          `doctor is not found with id of ${req.params.id}`,
+          404
+        )
       )
-    );
-  }
+    }
 
-  // Make sure user is admin 
-  if ( req.user.role !== 'admin' &&  req.user.role !== 'doctor') {
-    return next(
-      new ErrorResponse(
-        `User ${req.params.id} is not authorized to update doctor`,
-        401
+    // Make sure user is admin
+    if (req.user.role !== 'admin' && req.user.role !== 'doctor') {
+      return next(
+        new ErrorResponse(
+          `User ${req.params.id} is not authorized to update doctor`,
+          401
+        )
       )
-    );
-  }
+    }
 
- const  updateDoctor = await Doctor.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true
-  });
-  
-  res.status(200).json({
-    success: true,
-    data: updateDoctor
-  });
-}),
+    const updateDoctor = await Doctor.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+        runValidators: true
+      }
+    )
 
-// @desc    Delete doctor 
-// @route   DELETE /api/v1/doctors/:id
-// @access  Private
+    res.status(200).json({
+      success: true,
+      data: updateDoctor
+    })
+  }),
 
-deleteDoctors : asyncHandler(async (req, res, next) => {
-  const doctor = await Doctor.findById(req.params.id);
+  // @desc    Delete doctor
+  // @route   DELETE /api/v1/doctors/:id
+  // @access  Private
 
-  if (!Doctor) {
-    return next(
-      new ErrorResponse(
-        `doctor is not found with id of ${req.params.id}`,
-        404
+  deleteDoctors: asyncHandler(async (req, res, next) => {
+    const doctor = await Doctor.findById(req.params.id)
+
+    if (!Doctor) {
+      return next(
+        new ErrorResponse(
+          `doctor is not found with id of ${req.params.id}`,
+          404
+        )
       )
-    );
-  }
+    }
 
-  // Make sure user is admin
-  if (req.user.role !== 'admin') {
-    return next(
-      new ErrorResponse(
-        `User ${req.params.id} is not authorized to delete this doctor`,
-        401
+    // Make sure user is admin
+    if (req.user.role !== 'admin') {
+      return next(
+        new ErrorResponse(
+          `User ${req.params.id} is not authorized to delete this doctor`,
+          401
+        )
       )
-    );
-  }
+    }
 
-  doctor.remove();
+    doctor.remove()
 
-  res.status(200).json({
-    success: true,
-    data: {}
-  });
-}),
+    res.status(200).json({
+      success: true,
+      data: {}
+    })
+  }),
 
-// @desc      Get doctors within a radius
-// @route     GET /api/v1/doctors/radius/:latitude/:longitude/:distance
-// @access    Private
-getDoctorsInRadius : asyncHandler(async (req, res, next) => {
-  const { longitude , latitude , distance } = req.params;
- 
+  // @desc      Get doctors within a radius
+  // @route     GET /api/v1/doctors/radius/:latitude/:longitude/:distance
+  // @access    Private
+  getDoctorsInRadius: asyncHandler(async (req, res, next) => {
+    const { longitude, latitude, distance } = req.params
 
-  // Calc radius using radians
-  // Divide dist by radius of Earth
-  // Earth Radius = 3,963 mi / 6,378 km
-  const radius = distance / 3963;
+    // Calc radius using radians
+    // Divide dist by radius of Earth
+    // Earth Radius = 3,963 mi / 6,378 km
+    const radius = distance / 3963
 
-  const doctors = await Doctor.find({
-    location: { $geoWithin: { $centerSphere: [[longitude , latitude], radius] } }
-  });
-doctors.reverse();
-  res.status(200).json({
-    success: true,
-    count: doctors.length,
-    data: doctors
-  });
-}),
+    const doctors = await Doctor.find({
+      location: {
+        $geoWithin: { $centerSphere: [[longitude, latitude], radius] }
+      }
+    })
+    doctors.reverse()
+    res.status(200).json({
+      success: true,
+      count: doctors.length,
+      data: doctors
+    })
+  }),
 
-// @desc      Retrieve photo of doctor
-// @route     GET /api/v1/doctors/:id/photo
-// @access    Public
-doctorPhotoRetrieve : asyncHandler(async(req, res) => {
+  // @desc      Upload photo for doctor
+  // @route     PUT /api/v1/doctors/:id/photo
+  // @access    Private
+  doctorPhotoUpload: asyncHandler(async (req, res, next) => {
+    const doctor = await Doctor.findById(req.params.id)
 
-  file = req.params.id;
-  console.log(req.params.id);
-  const img = path.join(__dirname, '../' , 'public' , 'uploads' , file);
-  console.log(img);
-  
-  res.writeHead(200, {'Content-Type': 'image/png' });
-  res.end(img, 'binary');
-
-}),
-
-// @desc      Upload photo for doctor
-// @route     PUT /api/v1/doctors/:id/photo
-// @access    Private
-doctorPhotoUpload : asyncHandler(async (req, res, next) => {
-  const doctor = await Doctor.findById(req.params.id);
-
-  if (!doctor) {
-    return next(
-      new ErrorResponse(`Doctor not found with id of ${req.params.id}`, 404)
-    );
-  }
-
-  // Make sure user is admin
-  if (req.user.role !== 'admin' && req.user.role !== 'doctor') {
-    return next(
-      new ErrorResponse(
-        `User ${req.params.id} is not authorized to update doctor`,
-        401
+    if (!doctor) {
+      return next(
+        new ErrorResponse(`Doctor not found with id of ${req.params.id}`, 404)
       )
-    );
-  }
+    }
 
-  if (!req.file) {
-    return next(new ErrorResponse(`Please upload a file`, 400));
-  }
-
-  const file = req.file;
-
-  // Make sure the image is a photo
-  if (!file.mimetype.startsWith('image')) {
-    return next(new ErrorResponse(`Please upload an image file`, 400));
-  }
-
-  // Check filesize
-  if (file.size > process.env.MAX_FILE_UPLOAD) {
-    return next(
-      new ErrorResponse(
-        `Please upload an image less than ${process.env.MAX_FILE_UPLOAD}`,
-        400
+    // Make sure user is admin
+    if (req.user.role !== 'admin' && req.user.role !== 'doctor') {
+      return next(
+        new ErrorResponse(
+          `User ${req.params.id} is not authorized to update doctor`,
+          401
+        )
       )
-    );
-  }
+    }
 
-  console.log(file);
-  // Create custom filename
-  // file.name = `photo_${doctor._id}${path.parse(file.name).ext}`;
-  // console.log(`${process.env.FILE_UPLOAD_PATH}/${file.name}`);
-  
-  // file.mv(`${process.env.FILE_UPLOAD_PATH}/${file.name}`, async err => {
-  //   if (err) {
-  //     console.error(err);
-  //     return next(new ErrorResponse(`Problem with file upload`, 500));
-  //   }
+    if (!req.file) {
+      return next(new ErrorResponse('Please upload a file', 400))
+    }
 
-    await Doctor.findByIdAndUpdate(req.params.id, { photo: file.filename });
-    console.log(req.file);
+    const file = req.file
+
+    // Make sure the image is a photo
+    if (!file.mimetype.startsWith('image')) {
+      return next(new ErrorResponse('Please upload an image file', 400))
+    }
+
+    // Check filesize
+    if (file.size > process.env.MAX_FILE_UPLOAD) {
+      return next(
+        new ErrorResponse(
+          `Please upload an image less than ${process.env.MAX_FILE_UPLOAD}`,
+          400
+        )
+      )
+    }
+
+    console.log(file)
+    // Create custom filename
+    // file.name = `photo_${doctor._id}${path.parse(file.name).ext}`;
+    // console.log(`${process.env.FILE_UPLOAD_PATH}/${file.name}`);
+
+    // file.mv(`${process.env.FILE_UPLOAD_PATH}/${file.name}`, async err => {
+    //   if (err) {
+    //     console.error(err);
+    //     return next(new ErrorResponse(`Problem with file upload`, 500));
+    //   }
+
+    await Doctor.findByIdAndUpdate(req.params.id, { photo: file.filename })
+    console.log(req.file)
     res.status(200).json({
       success: true,
       data: file.filename
-    });
+    })
   }),
-// });
+  // });
 
-// @desc      Register doctor
-// @route     POST /api/v1/doctors/auth/register
-// @access    Public
-register : asyncHandler(async (req, res, next) => {
- console.log(req.body);
- 
-  // Create doctor
-  const doctor = await Doctor.create(req.body);
+  // @desc      Register doctor
+  // @route     POST /api/v1/doctors/auth/register
+  // @access    Public
+  register: asyncHandler(async (req, res, next) => {
+    console.log(req.body)
 
-  sendTokenResponse(doctor, 200, res);
-}),
+    // Create doctor
+    const doctor = await Doctor.create(req.body)
 
-// @desc      Login doctor
-// @route     POST /api/v1/doctors/auth/login
-// @access    Public
-login : asyncHandler(async (req, res, next) => {
-  const { email, password } = req.body;
+    sendTokenResponse(doctor, 200, res)
+  }),
 
-  // Validate emil & password
-  if (!email || !password) {
-    return next(new ErrorResponse('Please provide an email and password', 400));
-  }
+  // @desc      Login doctor
+  // @route     POST /api/v1/doctors/auth/login
+  // @access    Public
+  login: asyncHandler(async (req, res, next) => {
+    const { email, password } = req.body
 
-  // Check for doctor
-  const doctor = await Doctor.findOne({ email:email }).select('+password');
-  
-  
+    // Validate emil & password
+    if (!email || !password) {
+      return next(
+        new ErrorResponse('Please provide an email and password', 400)
+      )
+    }
 
-  if (!doctor) {
-    return next(new ErrorResponse('Invalid credentials', 401));
-  }
+    // Check for doctor
+    const doctor = await Doctor.findOne({ email: email }).select('+password')
 
-  // Check if password matches
-  const isMatch = await doctor.matchPassword(password);
+    if (!doctor) {
+      return next(new ErrorResponse('Invalid credentials', 401))
+    }
 
-  if (!isMatch) {
-    return next(new ErrorResponse('Invalid credentials', 401));
-  }
+    // Check if password matches
+    const isMatch = await doctor.matchPassword(password)
 
-  sendTokenResponse(doctor, 200, res);
-}),
+    if (!isMatch) {
+      return next(new ErrorResponse('Invalid credentials', 401))
+    }
 
-// @desc      Log user out / clear cookie
-// @route     GET /api/v1/doctors/auth/logout
-// @access    Private
-logout : asyncHandler(async (req, res, next) => {
-  res.cookie('token', 'none', {
-    expires: new Date(Date.now() + 10 * 1000),
-    httpOnly: true
-  });
+    sendTokenResponse(doctor, 200, res)
+  }),
 
-  res.status(200).json({
-    success: true,
-    data: {}
-  });
-}),
+  // @desc      Log user out / clear cookie
+  // @route     GET /api/v1/doctors/auth/logout
+  // @access    Private
+  logout: asyncHandler(async (req, res, next) => {
+    res.cookie('token', 'none', {
+      expires: new Date(Date.now() + 10 * 1000),
+      httpOnly: true
+    })
 
-// @desc      Get current logged in doctor
-// @route     POST /api/v1/doctors/auth/me
-// @access    Private
-getMe : asyncHandler(async (req, res, next) => {
-  const doctor = await Doctor.findById(req.user.id);
+    res.status(200).json({
+      success: true,
+      data: {}
+    })
+  }),
 
-  res.status(200).json({
-    success: true,
-    data: doctor
-  });
-})
+  // @desc      Get current logged in doctor
+  // @route     POST /api/v1/doctors/auth/me
+  // @access    Private
+  getMe: asyncHandler(async (req, res, next) => {
+    const doctor = await Doctor.findById(req.user.id)
+
+    res.status(200).json({
+      success: true,
+      data: doctor
+    })
+  })
 }

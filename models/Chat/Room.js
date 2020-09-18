@@ -1,15 +1,15 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose'
 
-const RoomSchema = new mongoose.Schema({
-
+const RoomSchema = new mongoose.Schema(
+  {
     userIds: [mongoose.Schema.Types.ObjectId],
-    chatInitiator: String,
+    chatInitiator: String
   },
   {
     timestamps: true,
-    collection: "rooms",
+    collection: 'rooms'
   }
-);
+)
 
 /**
  * @param {String} userId - id of user
@@ -17,10 +17,10 @@ const RoomSchema = new mongoose.Schema({
  */
 RoomSchema.statics.getChatRoomsByUserId = async function (userId) {
   try {
-    const rooms = await this.find({ userIds: { $all: [userId] } });
-    return rooms;
+    const rooms = await this.find({ userIds: { $all: [userId] } })
+    return rooms
   } catch (error) {
-    throw error;
+    throw error
   }
 }
 
@@ -30,10 +30,10 @@ RoomSchema.statics.getChatRoomsByUserId = async function (userId) {
  */
 RoomSchema.statics.getChatRoomByRoomId = async function (roomId) {
   try {
-    const room = await this.findOne({ _id: roomId });
-    return room;
+    const room = await this.findOne({ _id: roomId })
+    return room
   } catch (error) {
-    throw error;
+    throw error
   }
 }
 
@@ -47,27 +47,27 @@ RoomSchema.statics.initiateChat = async function (userIds, chatInitiator) {
     const availableRoom = await this.findOne({
       userIds: {
         $size: userIds.length,
-        $all: [...userIds],
+        $all: [...userIds]
       }
-    });
+    })
     if (availableRoom) {
       return {
         isNew: false,
         message: 'retrieving an old chat room',
         chatRoomId: availableRoom._doc._id
-      };
+      }
     }
 
-    const newRoom = await this.create({ userIds, chatInitiator });
+    const newRoom = await this.create({ userIds, chatInitiator })
     return {
       isNew: true,
       message: 'creating a new chatroom',
-      chatRoomId: newRoom._doc._id,
-    };
+      chatRoomId: newRoom._doc._id
+    }
   } catch (error) {
-    console.log('error on start chat method', error);
-    throw error;
+    console.log('error on start chat method', error)
+    throw error
   }
 }
 
-export default mongoose.model("Room", RoomSchema);
+export default mongoose.model('Room', RoomSchema)

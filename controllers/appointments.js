@@ -1,186 +1,200 @@
-import ErrorResponse from'../utils/errorResponse.js';
-import asyncHandler from'../middleware/async.js';
-import Appointment from'../models/Appointment.js';
-import Schedule from'../models/Schedule.js';
-import Doctor from'../models/Doctor.js';
-import User from'../models/User.js';
+import ErrorResponse from '../utils/errorResponse.js'
+import asyncHandler from '../middleware/async.js'
+import Appointment from '../models/Appointment.js'
+import Schedule from '../models/Schedule.js'
+import Doctor from '../models/Doctor.js'
 
 export default {
+  // @desc      Get appointments
+  // @route     GET /api/v1/appointments
+  // @route     GET /api/v1/users/:userId/appointments
+  // @access    Public
+  getAppointments: asyncHandler(async (req, res, next) => {
+    if (req.params.userId) {
+      const appointments = await Appointment.find({ user: req.params.userId })
 
-// @desc      Get appointments
-// @route     GET /api/v1/appointments
-// @route     GET /api/v1/users/:userId/appointments
-// @access    Public
-getAppointments : asyncHandler(async (req, res, next) => {
-    if(req.params.userId){
-      const appointments = await Appointment.find({ user: req.params.userId });
-  
-  
       return res.status(200).json({
         success: true,
         count: appointments.length,
         data: appointments
-        
-      });
-    }
-     else {
-      res.status(200).json(res.advancedResults);
+      })
+    } else {
+      res.status(200).json(res.advancedResults)
     }
   }),
 
-// @desc      Get single appointment
-// @route     GET /api/v1/appointmens/:id
-// @access    Public
-getAppointment : asyncHandler(async (req, res, next) => {
-    const appointment = await Appointment.findById(req.params.id);
-    const schedule = await Schedule.findById(appointment.schedule);
-  
+  // @desc      Get single appointment
+  // @route     GET /api/v1/appointmens/:id
+  // @access    Public
+  getAppointment: asyncHandler(async (req, res, next) => {
+    const appointment = await Appointment.findById(req.params.id)
+    const schedule = await Schedule.findById(appointment.schedule)
+
     if (!appointment) {
       return next(
-        new ErrorResponse(`No Appointment found with the id of ${req.params.id}`, 404)
-      );
+        new ErrorResponse(
+          `No Appointment found with the id of ${req.params.id}`,
+          404
+        )
+      )
     }
-  
+
     res.status(200).json({
       success: true,
       data: {
-       appointment ,
-        schedule 
+        appointment,
+        schedule
       }
-
-    });
+    })
   }),
 
-// @desc      Delete appointment
-// @route     DELETE /api/v1/appointments/:id
-// @access    Private
-deleteAppointment : asyncHandler(async (req, res, next) => {
-    const appointment = await Appointment.findById(req.params.id);
-  
+  // @desc      Delete appointment
+  // @route     DELETE /api/v1/appointments/:id
+  // @access    Private
+  deleteAppointment: asyncHandler(async (req, res, next) => {
+    const appointment = await Appointment.findById(req.params.id)
+
     if (!appointment) {
       return next(
         new ErrorResponse(`No appointment with the id of ${req.params.id}`, 404)
-      );
+      )
     }
-  
+
     // Make sure appointment's user is admin
     if (req.user.role !== 'admin') {
-      return next(new ErrorResponse(`Not authorized to update appointment`, 401));
+      return next(
+        new ErrorResponse('Not authorized to update appointment', 401)
+      )
     }
-  
-    await appointment.remove();
-  
+
+    await appointment.remove()
+
     res.status(200).json({
       success: true,
       data: {}
-    });
+    })
   }),
-  
-  // @desc      Update appointment 
+
+  // @desc      Update appointment
   // @route     PUT /api/v1/appointments/:id
   // @access    Private
-  updateAppointment : asyncHandler(async (req, res, next) => {
-   let appointment = await Appointment.findById(req.params.id);
-  
+  updateAppointment: asyncHandler(async (req, res, next) => {
+    let appointment = await Appointment.findById(req.params.id)
+
     if (!appointment) {
-      return next( 
+      return next(
         new ErrorResponse(`No appointment with the id of ${req.params.id}`, 404)
-      );
+      )
     }
-  
+
     // Make sure appointment belongs to user or user is admin
-    if ( !req.user.id && req.user.role !== 'admin') {
-      return next(new ErrorResponse(`Not authorized to update appointment`, 401));
+    if (!req.user.id && req.user.role !== 'admin') {
+      return next(
+        new ErrorResponse('Not authorized to update appointment', 401)
+      )
     }
-  
+
     appointment = await Appointment.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true
-    });
-  
+    })
+
     res.status(200).json({
       success: true,
-      data: appointment 
-    });
+      data: appointment
+    })
   }),
 
-// @desc      Book appointment
-// @route     POST /api/v1/schedules/:scheduleId/appointments
-// @access    Private 
- bookAppointment : asyncHandler(async (req, res, next) => {
-    req.body.user = req.user.id;
-    req.body.schedule = req.params.scheduleId;
-  
-    let schedule = await Schedule.findById(req.params.scheduleId);
-    
-  
+  // @desc      Book appointment
+  // @route     POST /api/v1/schedules/:scheduleId/appointments
+  // @access    Private
+  bookAppointment: asyncHandler(async (req, res, next) => {
+    req.body.user = req.user.id
+    req.body.schedule = req.params.scheduleId
+
+    let schedule = await Schedule.findById(req.params.scheduleId)
+
     if (!schedule) {
       return next(
         new ErrorResponse(`No schedule with the id of ${req.params.id}`, 404)
-      );
+      )
     }
-    req.body.patientNumber = schedule.totalNumber + 1;
-  
-   schedule = await Schedule.findByIdAndUpdate(req.params.scheduleId, {totalNumber:req.body.patientNumber}, {
-      new: true,
-      runValidators: true
-    });
-    
-    const appointment = await Appointment.create(req.body);
-    
+    req.body.patientNumber = schedule.totalNumber + 1
+
+    schedule = await Schedule.findByIdAndUpdate(
+      req.params.scheduleId,
+      { totalNumber: req.body.patientNumber },
+      {
+        new: true,
+        runValidators: true
+      }
+    )
+
+    const appointment = await Appointment.create(req.body)
+
     res.status(201).json({
       success: true,
       appointment: appointment,
-      schedule : schedule
-
-    });
+      schedule: schedule
+    })
   }),
-  
- 
+
   // @desc      SCAN appointment by QR code
   // @route     PUT /api/v1/doctors/appointments/:appointmentId/qr
   // @access    Private (doctor)
-  scanAppointmentByQR : asyncHandler(async (req, res, next) => {
-  
-    let doctor = await Doctor.findById(req.user.id);
-  
-    let appointment = await Appointment.findById(req.params.appointmentId);
+  scanAppointmentByQR: asyncHandler(async (req, res, next) => {
+    const doctor = await Doctor.findById(req.user.id)
 
-    let schedule = await Schedule.findById(appointment.schedule);
-    
-  
+    let appointment = await Appointment.findById(req.params.appointmentId)
+
+    let schedule = await Schedule.findById(appointment.schedule)
+
     if (!appointment) {
       return next(
-        new ErrorResponse(`No appointment with the id of ${req.params.appointmentId}`, 404)
-      );
+        new ErrorResponse(
+          `No appointment with the id of ${req.params.appointmentId}`,
+          404
+        )
+      )
     }
-    if(schedule.doctor.toString() !== req.user.id){
+    if (schedule.doctor.toString() !== req.user.id) {
       return next(
-        new ErrorResponse(`No appointment with the id of ${req.params.appointmentId} belong to this doctor`, 404)
-      );
+        new ErrorResponse(
+          `No appointment with the id of ${req.params.appointmentId} belong to this doctor`,
+          404
+        )
+      )
     }
-    
-    req.body.sessionBegun = true ;
-    
-  const curr = appointment.patientNumber;
-  
-   schedule = await Schedule.findByIdAndUpdate(schedule._id, {currentNumber:curr}, {
-      new: true,
-      runValidators: true
-    });
 
-    console.log(schedule);
-  
-    appointment = await Appointment.findByIdAndUpdate(req.params.appointmentId, req.body, {
-      new: true,
-      runValidators: true
-    });
-  
+    req.body.sessionBegun = true
+
+    const curr = appointment.patientNumber
+
+    schedule = await Schedule.findByIdAndUpdate(
+      schedule._id,
+      { currentNumber: curr },
+      {
+        new: true,
+        runValidators: true
+      }
+    )
+
+    console.log(schedule)
+
+    appointment = await Appointment.findByIdAndUpdate(
+      req.params.appointmentId,
+      req.body,
+      {
+        new: true,
+        runValidators: true
+      }
+    )
+
     res.status(201).json({
       success: true,
-       appointment ,
-       doctor ,
-       schedule
-    });
+      appointment,
+      doctor,
+      schedule
+    })
   })
 }

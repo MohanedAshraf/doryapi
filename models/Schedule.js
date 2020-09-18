@@ -1,19 +1,18 @@
-import mongoose from 'mongoose';
+import mongoose from 'mongoose'
 
 const ScheduleSchema = new mongoose.Schema({
-
   bookSystem: {
     type: String,
-    enum: ['byNumber', 'byTime'],
+    enum: ['byNumber', 'byTime']
   },
   currentNumber: Number,
   totalNumber: Number,
   sessionCost: Number,
   startedAt: {
-    type: Number,
+    type: Number
   },
   endedAt: {
-    type: Number,
+    type: Number
   },
 
   time: String,
@@ -31,8 +30,7 @@ const ScheduleSchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: 'Doctor',
     required: true
-  },
-  
-});
+  }
+})
 
-export default mongoose.model('Schedule', ScheduleSchema);
+export default mongoose.model('Schedule', ScheduleSchema)

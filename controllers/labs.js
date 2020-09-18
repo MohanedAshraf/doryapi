@@ -1,315 +1,293 @@
-import path from'path';
-import zipcodes from'zipcodes';
-import ErrorResponse from'../utils/errorResponse.js';
-import asyncHandler from'../middleware/async.js';
-import geocoder from'../utils/geocoder.js';
-import Lab from'../models/Lab.js';
-
-
+import ErrorResponse from '../utils/errorResponse.js'
+import asyncHandler from '../middleware/async.js'
+import Lab from '../models/Lab.js'
 // Get token from model, create cookie and send response
 const sendTokenResponse = (user, statusCode, res) => {
   // Create token
-  const token = user.getSignedJwtToken();
+  const token = user.getSignedJwtToken()
 
   const options = {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
     ),
     httpOnly: true
-  };
+  }
 
   if (process.env.NODE_ENV === 'production') {
-    options.secure = true;
+    options.secure = true
   }
 
-  res
-    .status(statusCode)
-    .cookie('token', token, options)
-    .json({
-      success: true,
-      token
-    });
-};
+  res.status(statusCode).cookie('token', token, options).json({
+    success: true,
+    token
+  })
+}
 
 export default {
+  // @desc    Get all Labs
+  // @route   GET /api/v1/labs
+  // @access  Public
 
-// @desc    Get all Labs
-// @route   GET /api/v1/labs
-// @access  Public
+  getLabs: asyncHandler(async (req, res, next) => {
+    res.status(200).json(res.advancedResults)
+  }),
 
-getLabs : asyncHandler(async (req, res, next) => {
-  res.status(200).json(res.advancedResults);
-}),
+  // @desc    Get single Labs
+  // @route   GET /api/v1/labs/:id
+  // @access  Public
 
-// @desc    Get single Labs
-// @route   GET /api/v1/labs/:id
-// @access  Public
-
-getLab : asyncHandler(async (req, res, next) => {
-  const lab = await Lab.findById(req.params.id);
-  if (!lab) {
-    return next(
-      new ErrorResponse(
-        `lab is not found with id of ${req.params.id}`,
-        404
+  getLab: asyncHandler(async (req, res, next) => {
+    const lab = await Lab.findById(req.params.id)
+    if (!lab) {
+      return next(
+        new ErrorResponse(`lab is not found with id of ${req.params.id}`, 404)
       )
-    );
-  }
-  res.status(200).json({
-    success: true,
-    data: lab
-  });
-}),
+    }
+    res.status(200).json({
+      success: true,
+      data: lab
+    })
+  }),
 
-// @desc    Create new Lab
-// @route   POST /api/v1/labs
-// @access  Private
+  // @desc    Create new Lab
+  // @route   POST /api/v1/labs
+  // @access  Private
 
-createLab : asyncHandler(async (req, res, next) => {
-  // Add user to req,body
-  req.body.user = req.user.id;
-
-
-  // If the user is not an admin, they can't create lab
-  if (req.user.role !== 'admin') {
-    return next(
-      new ErrorResponse(
-        `The user with ID ${req.user.id} don't have access to create lab`,
-        400
+  createLab: asyncHandler(async (req, res, next) => {
+    // Add user to req,body
+    req.body.user = req.user.id
+    // If the user is not an admin, they can't create lab
+    if (req.user.role !== 'admin') {
+      return next(
+        new ErrorResponse(
+          `The user with ID ${req.user.id} don't have access to create lab`,
+          400
+        )
       )
-    );
-  }
-  const lab = await Lab.create(req.body);
-  res.status(201).json({
-    success: true,
-    data: lab 
-  });
-}),
+    }
+    const lab = await Lab.create(req.body)
+    res.status(201).json({
+      success: true,
+      data: lab
+    })
+  }),
 
-// @desc    Update lab
-// @route   PUT /api/v1/labs/:id
-// @access  Private
+  // @desc    Update lab
+  // @route   PUT /api/v1/labs/:id
+  // @access  Private
 
-updateLab : asyncHandler(async (req, res, next) => {
-  let lab = await Lab.findById(req.params.id, req.body);
-  if (!lab) {
-    return next(
-      new ErrorResponse(
-        `Lab is not found with id of ${req.params.id}`,
-        404
+  updateLab: asyncHandler(async (req, res, next) => {
+    let lab = await Lab.findById(req.params.id, req.body)
+    if (!lab) {
+      return next(
+        new ErrorResponse(`Lab is not found with id of ${req.params.id}`, 404)
       )
-    );
-  }
+    }
 
-  // Make sure user is admin 
-  if ( req.user.role !== 'admin') {
-    return next(
-      new ErrorResponse(
-        `User ${req.params.id} is not authorized to update lab`,
-        401
+    // Make sure user is admin
+    if (req.user.role !== 'admin') {
+      return next(
+        new ErrorResponse(
+          `User ${req.params.id} is not authorized to update lab`,
+          401
+        )
       )
-    );
-  }
+    }
 
-  lab = await Lab.findOneAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true
-  });
+    lab = await Lab.findOneAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true
+    })
 
-  res.status(200).json({
-    success: true,
-    data: lab
-  });
-}),
+    res.status(200).json({
+      success: true,
+      data: lab
+    })
+  }),
 
-// @desc    Delete lab
-// @route   DELETE /api/v1/labs/:id
-// @access  Private
+  // @desc    Delete lab
+  // @route   DELETE /api/v1/labs/:id
+  // @access  Private
 
-deleteLab : asyncHandler(async (req, res, next) => {
-  const lab = await Lab.findById(req.params.id);
+  deleteLab: asyncHandler(async (req, res, next) => {
+    const lab = await Lab.findById(req.params.id)
 
-  if (!lab) {
-    return next(
-      new ErrorResponse(
-        `lab is not found with id of ${req.params.id}`,
-        404
+    if (!lab) {
+      return next(
+        new ErrorResponse(`lab is not found with id of ${req.params.id}`, 404)
       )
-    );
-  }
+    }
 
-  // Make sure user is admin
-  if (req.user.role !== 'admin') {
-    return next(
-      new ErrorResponse(
-        `User ${req.params.id} is not authorized to delete this lab`,
-        401
+    // Make sure user is admin
+    if (req.user.role !== 'admin') {
+      return next(
+        new ErrorResponse(
+          `User ${req.params.id} is not authorized to delete this lab`,
+          401
+        )
       )
-    );
-  }
+    }
 
-  lab.remove();
+    lab.remove()
 
-  res.status(200).json({
-    success: true,
-    data: {}
-  });
-}),
+    res.status(200).json({
+      success: true,
+      data: {}
+    })
+  }),
 
+  // @desc      Get labs within a radius
+  // @route     GET /api/v1/labs/radius/:latitude/:longitude/:distance
+  // @access    Private
+  getLabsInRadius: asyncHandler(async (req, res, next) => {
+    const { longitude, latitude, distance } = req.params
 
-// @desc      Get labs within a radius
-// @route     GET /api/v1/labs/radius/:latitude/:longitude/:distance
-// @access    Private
-getLabsInRadius : asyncHandler(async (req, res, next) => {
-  const { longitude , latitude , distance } = req.params;
- 
+    // Calc radius using radians
+    // Divide dist by radius of Earth
+    // Earth Radius = 3,963 mi / 6,378 km
+    const radius = distance / 3963
 
-  // Calc radius using radians
-  // Divide dist by radius of Earth
-  // Earth Radius = 3,963 mi / 6,378 km
-  const radius = distance / 3963;
+    const labs = await Lab.find({
+      location: {
+        $geoWithin: { $centerSphere: [[longitude, latitude], radius] }
+      }
+    })
+    labs.reverse()
+    res.status(200).json({
+      success: true,
+      count: labs.length,
+      data: labs
+    })
+  }),
 
-  const labs = await Lab.find({
-    location: { $geoWithin: { $centerSphere: [[longitude , latitude], radius] } }
-  });
- labs.reverse();
-  res.status(200).json({
-    success: true,
-    count: labs.length,
-    data: labs
-  });
-}),
+  // @desc      Upload photo for lab
+  // @route     PUT /api/v1/labs/:id/photo
+  // @access    Private
+  labPhotoUpload: asyncHandler(async (req, res, next) => {
+    const lab = await Lab.findById(req.params.id)
 
-// @desc      Upload photo for lab
-// @route     PUT /api/v1/labs/:id/photo
-// @access    Private
-labPhotoUpload : asyncHandler(async (req, res, next) => {
-  const lab = await Lab.findById(req.params.id);
-
-  if (!lab) {
-    return next(
-      new ErrorResponse(`Lab not found with id of ${req.params.id}`, 404)
-    );
-  }
-
-  // Make sure user is admin
-  if (req.user.role !== 'admin' && req.user.role !== 'lab') {
-    return next(
-      new ErrorResponse(
-        `User ${req.params.id} is not authorized to update lab`,
-        401
+    if (!lab) {
+      return next(
+        new ErrorResponse(`Lab not found with id of ${req.params.id}`, 404)
       )
-    );
-  }
+    }
 
-  if (!req.files) {
-    return next(new ErrorResponse(`Please upload a file`, 400));
-  }
-
-  const file = req.file;
-
-  // Make sure the image is a photo
-  if (!file.mimetype.startsWith('image')) {
-    return next(new ErrorResponse(`Please upload an image file`, 400));
-  }
-
-  // Check filesize
-  if (file.size > process.env.MAX_FILE_UPLOAD) {
-    return next(
-      new ErrorResponse(
-        `Please upload an image less than ${process.env.MAX_FILE_UPLOAD}`,
-        400
+    // Make sure user is admin
+    if (req.user.role !== 'admin' && req.user.role !== 'lab') {
+      return next(
+        new ErrorResponse(
+          `User ${req.params.id} is not authorized to update lab`,
+          401
+        )
       )
-    );
-  }
+    }
 
-  // Create custom filename
-  // file.name = `photo_${lab._id}${path.parse(file.name).ext}`;
+    if (!req.files) {
+      return next(new ErrorResponse('Please upload a file', 400))
+    }
 
-  // file.mv(`${process.env.FILE_UPLOAD_PATH}/${file.name}`, async err => {
-  //   if (err) {
-  //     console.error(err);
-  //     return next(new ErrorResponse(`Problem with file upload`, 500));
-  //   }
+    const file = req.file
 
-    await Lab.findByIdAndUpdate(req.params.id, { photo: file.filename });
+    // Make sure the image is a photo
+    if (!file.mimetype.startsWith('image')) {
+      return next(new ErrorResponse('Please upload an image file', 400))
+    }
+
+    // Check filesize
+    if (file.size > process.env.MAX_FILE_UPLOAD) {
+      return next(
+        new ErrorResponse(
+          `Please upload an image less than ${process.env.MAX_FILE_UPLOAD}`,
+          400
+        )
+      )
+    }
+
+    // Create custom filename
+    // file.name = `photo_${lab._id}${path.parse(file.name).ext}`;
+
+    // file.mv(`${process.env.FILE_UPLOAD_PATH}/${file.name}`, async err => {
+    //   if (err) {
+    //     console.error(err);
+    //     return next(new ErrorResponse(`Problem with file upload`, 500));
+    //   }
+
+    await Lab.findByIdAndUpdate(req.params.id, { photo: file.filename })
 
     res.status(200).json({
       success: true,
       data: file.filename
-    });
+    })
   }),
-//});
+  // });
 
-// @desc      Register lab
-// @route     POST /api/v1/labs/auth/register
-// @access    Public
-register : asyncHandler(async (req, res, next) => {
- //console.log(req.body);
-  
-  // Create lab
-  const lab = await Lab.create(req.body);
-  console.log(lab);
+  // @desc      Register lab
+  // @route     POST /api/v1/labs/auth/register
+  // @access    Public
+  register: asyncHandler(async (req, res, next) => {
+    // console.log(req.body);
 
-  sendTokenResponse(lab, 200, res);
-}),
+    // Create lab
+    const lab = await Lab.create(req.body)
+    console.log(lab)
 
-// @desc      Login lab
-// @route     POST /api/v1/labs/auth/login
-// @access    Public
-login : asyncHandler(async (req, res, next) => {
-  const { email, password } = req.body;
+    sendTokenResponse(lab, 200, res)
+  }),
 
-  // Validate emil & password
-  if (!email || !password) {
-    return next(new ErrorResponse('Please provide an email and password', 400));
-  }
+  // @desc      Login lab
+  // @route     POST /api/v1/labs/auth/login
+  // @access    Public
+  login: asyncHandler(async (req, res, next) => {
+    const { email, password } = req.body
 
-  // Check for lab
-  const lab = await Lab.findOne({ email:email }).select('+password');
-  
-  
+    // Validate emil & password
+    if (!email || !password) {
+      return next(
+        new ErrorResponse('Please provide an email and password', 400)
+      )
+    }
 
-  if (!lab) {
-    return next(new ErrorResponse('Invalid credentials', 401));
-  }
+    // Check for lab
+    const lab = await Lab.findOne({ email: email }).select('+password')
 
-  // Check if password matches
-  const isMatch = await lab.matchPassword(password);
+    if (!lab) {
+      return next(new ErrorResponse('Invalid credentials', 401))
+    }
 
-  if (!isMatch) {
-    return next(new ErrorResponse('Invalid credentials', 401));
-  }
+    // Check if password matches
+    const isMatch = await lab.matchPassword(password)
 
-  sendTokenResponse(lab, 200, res);
-}),
+    if (!isMatch) {
+      return next(new ErrorResponse('Invalid credentials', 401))
+    }
 
-// @desc      Log user out / clear cookie
-// @route     GET /api/v1/labs/auth/logout
-// @access    Private
-logout : asyncHandler(async (req, res, next) => {
-  res.cookie('token', 'none', {
-    expires: new Date(Date.now() + 10 * 1000),
-    httpOnly: true
-  });
+    sendTokenResponse(lab, 200, res)
+  }),
 
-  res.status(200).json({
-    success: true,
-    data: {}
-  });
-}),
+  // @desc      Log user out / clear cookie
+  // @route     GET /api/v1/labs/auth/logout
+  // @access    Private
+  logout: asyncHandler(async (req, res, next) => {
+    res.cookie('token', 'none', {
+      expires: new Date(Date.now() + 10 * 1000),
+      httpOnly: true
+    })
 
-// @desc      Get current logged in lab
-// @route     GET /api/v1/labs/auth/me
-// @access    Private
-getMe : asyncHandler(async (req, res, next) => {
-  const lab = await Lab.findById(req.user.id);
+    res.status(200).json({
+      success: true,
+      data: {}
+    })
+  }),
 
-  res.status(200).json({
-    success: true,
-    data: lab
-  });
-})
+  // @desc      Get current logged in lab
+  // @route     GET /api/v1/labs/auth/me
+  // @access    Private
+  getMe: asyncHandler(async (req, res, next) => {
+    const lab = await Lab.findById(req.user.id)
 
-
+    res.status(200).json({
+      success: true,
+      data: lab
+    })
+  })
 }
