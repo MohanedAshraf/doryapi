@@ -1,15 +1,17 @@
-const ErrorResponse = require('../utils/errorResponse');
-const asyncHandler = require('../middleware/async');
-const Review = require('../models/Review');
-const Doctor = require('../models/Doctor');
-const Lab = require('../models/Lab');
+import ErrorResponse from '../utils/errorResponse.js';
+import asyncHandler from '../middleware/async.js';
+import Review from '../models/Review.js';
+import Doctor from '../models/Doctor.js';
+import Lab from '../models/Lab.js';
+
+export default {
 
 // @desc      Get reviews
 // @route     GET /api/v1/reviews
 // @route     GET /api/v1/doctors/:doctorId/reviews
 // @route     GET /api/v1/labs/:labId/reviews
 // @access    Public
-exports.getReviews = asyncHandler(async (req, res, next) => {
+getReviews : asyncHandler(async (req, res, next) => {
   if (req.params.doctorId) {
     const reviews = await Review.find({ doctor: req.params.doctorId });
 
@@ -31,12 +33,12 @@ exports.getReviews = asyncHandler(async (req, res, next) => {
   else{
     res.status(200).json(res.advancedResults);
   }
-});
+}),
 
 // @desc      Get single review
 // @route     GET /api/v1/reviews/:id
 // @access    Public
-exports.getReview = asyncHandler(async (req, res, next) => {
+getReview : asyncHandler(async (req, res, next) => {
   const review = await Review.findById(req.params.id);
 
   if (!review) {
@@ -49,13 +51,13 @@ exports.getReview = asyncHandler(async (req, res, next) => {
     success: true,
     data: review
   });
-});
+}),
 
 // @desc      Add review
 // @route     POST /api/v1/doctors/:doctorId/reviews
 // @route     POST /api/v1/labs/:labId/reviews
 // @access    Private
-exports.addReview = asyncHandler(async (req, res, next) => {
+addReview : asyncHandler(async (req, res, next) => {
   if(req.params.doctorId){
   req.body.doctor = req.params.doctorId;
   req.body.user = req.user.id;
@@ -101,12 +103,12 @@ else{
     success: true,
     data: review
   });
-});
+}),
 
 // @desc      Update review
 // @route     PUT /api/v1/reviews/:id
 // @access    Private
-exports.updateReview = asyncHandler(async (req, res, next) => {
+updateReview : asyncHandler(async (req, res, next) => {
   let review = await Review.findById(req.params.id);
 
   if (!review) {
@@ -129,12 +131,12 @@ exports.updateReview = asyncHandler(async (req, res, next) => {
     success: true,
     data: review
   });
-});
+}),
 
 // @desc      Delete review
 // @route     DELETE /api/v1/reviews/:id
 // @access    Private
-exports.deleteReview = asyncHandler(async (req, res, next) => {
+deleteReview : asyncHandler(async (req, res, next) => {
   const review = await Review.findById(req.params.id);
 
   if (!review) {
@@ -154,4 +156,6 @@ exports.deleteReview = asyncHandler(async (req, res, next) => {
     success: true,
     data: {}
   });
-});
+})
+
+}

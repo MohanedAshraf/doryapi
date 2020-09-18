@@ -1,7 +1,7 @@
-const passport = require("passport");
-const GooglePlusTokenStrategy = require("passport-google-plus-token")
-const FacebookTokenStrategy = require('passport-facebook-token');
-const User = require('./models/User');
+import passport from "passport";
+import GooglePlusTokenStrategy from "passport-google-plus-token";
+import FacebookTokenStrategy from 'passport-facebook-token';
+import User from './models/User.js';
 
 //Facebook OAuth Strategy 
 passport.use('facebookToken', new FacebookTokenStrategy({

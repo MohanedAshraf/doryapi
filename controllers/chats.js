@@ -1,12 +1,16 @@
-const ErrorResponse = require('../utils/errorResponse');
-const asyncHandler = require('../middleware/async');
-const Room = require('../models/Chat/Room.js');
-const Message = require('../models/Chat/Message.js');
+import ErrorResponse from '../utils/errorResponse.js';
+import mongoose from "mongoose";
+import asyncHandler from '../middleware/async.js';
+import Room from '../models/Chat/Room.js';
+import Message from '../models/Chat/Message.js';
+
+export default {
+
 
 // @desc      Initiate chat
 // @route     POST /api/v1/chats/initiate
 // @access    Private
-exports.initiateChatRoom = asyncHandler(async (req, res) => {
+initiateChatRoom : asyncHandler(async (req, res) => {
    
       const { userIds } = req.body;
       const { userId: chatInitiator } = req.user.id;
@@ -14,31 +18,28 @@ exports.initiateChatRoom = asyncHandler(async (req, res) => {
       const chatRoom = await Room.initiateChat(allUserIds , chatInitiator);
       return res.status(200).json({ success: true, chatRoom });
     
-});
+}),
 
 // @desc      Post message
 // @route     POST /api/v1/chats/:roomId/message
 // @access    Private
-exports.postMessage = asyncHandler(async (req, res) => {
+postMessage : asyncHandler(async (req, res) => {
     
       const { roomId } = req.params;
 
-      const messagePayload = {
-        message: req.body.message,
-      };
-
+    
       const currentLoggedUser = req.user.id;
-      const post = await Message.createPostInChatRoom(roomId, messagePayload, currentLoggedUser);
-      global.io.sockets.in(roomId).emit('new message', { message: post });
-      return res.status(200).json({ success: true, post });
+      const post = await Message.createPostInChatRoom(roomId, req.body.message, currentLoggedUser , req.user.role);
+      global.io.sockets.in(roomId).emit('new message', { message: post[0] });
+      return res.status(200).json({ success: true, post:post[0] });
   
-});
-
+}),
+ 
 
 // @desc      Get recent conversation
 // @route     GET /api/v1/chats
 // @access    Private
-exports.getRecentConversation = asyncHandler(async (req, res) => {
+getRecentConversation : asyncHandler(async (req, res) => {
     
       const currentLoggedUser = req.user.id;
       const options = {
@@ -50,14 +51,14 @@ exports.getRecentConversation = asyncHandler(async (req, res) => {
       const recentConversation = await Message.getRecentConversation(
         roomIds, options, currentLoggedUser
       );
-      return res.status(200).json({ success: true, conversation: recentConversation });
+      return res.status(200).json({ success: true, count : recentConversation.length, conversation: recentConversation });
     
-});
+}),
 
 // @desc      Get conversation by room id
 // @route     GET /api/v1/chats/:roomId
 // @access    Private
-exports.getConversationByRoomId = asyncHandler(async (req, res) => {
+getConversationByRoomId : asyncHandler(async (req, res) => {
     
       const { roomId } = req.params;
       const room = await Room.getChatRoomByRoomId(roomId)
@@ -70,20 +71,24 @@ exports.getConversationByRoomId = asyncHandler(async (req, res) => {
 
       const options = {
         page: parseInt(req.query.page) || 0,
-        limit: parseInt(req.query.limit) || 10,
+        limit: parseInt(req.query.limit) || 10000,
       };
-      const conversation = await Message.getConversationByRoomId(roomId, options);
+      
+
+      const conversation = await Message.getConversationByRoomId(mongoose.Types.ObjectId(roomId), options);
+      
       return res.status(200).json({
         success: true,
+        count : conversation.length,
         conversation,
       });
     
-});
+}),
 
 // @desc      Mark conversation as read
 // @route     PUT /api/v1/chats/:roomId/mark-read
 // @access    Private
-exports.markConversationReadByRoomId = asyncHandler(async (req, res) => {
+markConversationReadByRoomId : asyncHandler(async (req, res) => {
     
       const { roomId } = req.params;
       const room = await Room.getChatRoomByRoomId(roomId)
@@ -98,4 +103,5 @@ exports.markConversationReadByRoomId = asyncHandler(async (req, res) => {
       const result = await Message.markMessageRead(roomId, currentLoggedUser);
       return res.status(200).json({ success: true, data: result });
     
-  });
+  })
+}

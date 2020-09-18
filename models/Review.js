@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const ReviewSchema = new mongoose.Schema({
   username: {
@@ -120,4 +120,4 @@ ReviewSchema.pre('remove', function () {
   this.constructor.getLabAverageRating(this.lab);
 });
 
-module.exports = mongoose.model('Review', ReviewSchema);
+export default mongoose.model('Review', ReviewSchema);

@@ -1,24 +1,52 @@
-const path = require('path');
-const zipcodes = require('zipcodes');
-const ErrorResponse = require('../utils/errorResponse');
-const asyncHandler = require('../middleware/async');
-const geocoder = require('../utils/geocoder');
-const Doctor = require('../models/Doctor');
+import path from 'path';
+import ErrorResponse from '../utils/errorResponse.js';
+import asyncHandler from '../middleware/async.js';
+import Doctor from '../models/Doctor.js';
 
+
+
+// Get token from model, create cookie and send response
+const sendTokenResponse = (user, statusCode, res) => {
+  // Create token
+  const token = user.getSignedJwtToken();
+
+  const options = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
+    ),
+    httpOnly: true
+  };
+
+  if (process.env.NODE_ENV === 'production') {
+    options.secure = true;
+  }
+
+  res
+    .status(statusCode)
+    .cookie('token', token, options)
+    .json({
+      success: true,
+      token
+    });
+};
+
+
+
+export default {
 
 // @desc    Get all Doctors
 // @route   GET /api/v1/doctors
 // @access  Public
 
-exports.getDoctors = asyncHandler(async (req, res, next) => {
+getDoctors : asyncHandler(async (req, res, next) => {
   res.status(200).json(res.advancedResults);
-});
+}),
 
 // @desc    Get single Doctor
 // @route   GET /api/v1/doctors/:id
 // @access  Public
 
-exports.getDoctor = asyncHandler(async (req, res, next) => {
+getDoctor : asyncHandler(async (req, res, next) => {
   const doctor = await Doctor.findById(req.params.id);
   if (!doctor) {
     return next(
@@ -32,13 +60,13 @@ exports.getDoctor = asyncHandler(async (req, res, next) => {
     success: true,
     data: doctor
   });
-});
+}),
 
 // @desc    Create new Doctor
 // @route   POST /api/v1/doctors
 // @access  Private
 
-exports.createDoctor = asyncHandler(async (req, res, next) => {
+createDoctor : asyncHandler(async (req, res, next) => {
   // Add user to req,body
   req.body.user = req.user.id;
 
@@ -57,13 +85,13 @@ exports.createDoctor = asyncHandler(async (req, res, next) => {
     success: true,
     data: doctor 
   });
-});
+}),
 
 // @desc    Update Doctor
 // @route   PUT /api/v1/doctors/:id
 // @access  Private
 
-exports.updateDoctor = asyncHandler(async (req, res, next) => {
+updateDoctor : asyncHandler(async (req, res, next) => {
  
   const doctor = await Doctor.findById(req.params.id);
   
@@ -95,13 +123,13 @@ exports.updateDoctor = asyncHandler(async (req, res, next) => {
     success: true,
     data: updateDoctor
   });
-});
+}),
 
 // @desc    Delete doctor 
 // @route   DELETE /api/v1/doctors/:id
 // @access  Private
 
-exports.deleteDoctors = asyncHandler(async (req, res, next) => {
+deleteDoctors : asyncHandler(async (req, res, next) => {
   const doctor = await Doctor.findById(req.params.id);
 
   if (!Doctor) {
@@ -129,12 +157,12 @@ exports.deleteDoctors = asyncHandler(async (req, res, next) => {
     success: true,
     data: {}
   });
-});
+}),
 
 // @desc      Get doctors within a radius
 // @route     GET /api/v1/doctors/radius/:latitude/:longitude/:distance
 // @access    Private
-exports.getDoctorsInRadius = asyncHandler(async (req, res, next) => {
+getDoctorsInRadius : asyncHandler(async (req, res, next) => {
   const { longitude , latitude , distance } = req.params;
  
 
@@ -152,12 +180,12 @@ doctors.reverse();
     count: doctors.length,
     data: doctors
   });
-});
+}),
 
 // @desc      Retrieve photo of doctor
 // @route     GET /api/v1/doctors/:id/photo
 // @access    Public
-exports.doctorPhotoRetrieve = asyncHandler(async(req, res) => {
+doctorPhotoRetrieve : asyncHandler(async(req, res) => {
 
   file = req.params.id;
   console.log(req.params.id);
@@ -167,12 +195,12 @@ exports.doctorPhotoRetrieve = asyncHandler(async(req, res) => {
   res.writeHead(200, {'Content-Type': 'image/png' });
   res.end(img, 'binary');
 
-});
+}),
 
 // @desc      Upload photo for doctor
 // @route     PUT /api/v1/doctors/:id/photo
 // @access    Private
-exports.doctorPhotoUpload = asyncHandler(async (req, res, next) => {
+doctorPhotoUpload : asyncHandler(async (req, res, next) => {
   const doctor = await Doctor.findById(req.params.id);
 
   if (!doctor) {
@@ -212,6 +240,7 @@ exports.doctorPhotoUpload = asyncHandler(async (req, res, next) => {
     );
   }
 
+  console.log(file);
   // Create custom filename
   // file.name = `photo_${doctor._id}${path.parse(file.name).ext}`;
   // console.log(`${process.env.FILE_UPLOAD_PATH}/${file.name}`);
@@ -228,25 +257,25 @@ exports.doctorPhotoUpload = asyncHandler(async (req, res, next) => {
       success: true,
       data: file.filename
     });
-  });
+  }),
 // });
 
 // @desc      Register doctor
 // @route     POST /api/v1/doctors/auth/register
 // @access    Public
-exports.register = asyncHandler(async (req, res, next) => {
+register : asyncHandler(async (req, res, next) => {
  console.log(req.body);
  
   // Create doctor
   const doctor = await Doctor.create(req.body);
 
   sendTokenResponse(doctor, 200, res);
-});
+}),
 
 // @desc      Login doctor
 // @route     POST /api/v1/doctors/auth/login
 // @access    Public
-exports.login = asyncHandler(async (req, res, next) => {
+login : asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
 
   // Validate emil & password
@@ -271,12 +300,12 @@ exports.login = asyncHandler(async (req, res, next) => {
   }
 
   sendTokenResponse(doctor, 200, res);
-});
+}),
 
 // @desc      Log user out / clear cookie
 // @route     GET /api/v1/doctors/auth/logout
 // @access    Private
-exports.logout = asyncHandler(async (req, res, next) => {
+logout : asyncHandler(async (req, res, next) => {
   res.cookie('token', 'none', {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true
@@ -286,42 +315,17 @@ exports.logout = asyncHandler(async (req, res, next) => {
     success: true,
     data: {}
   });
-});
+}),
 
 // @desc      Get current logged in doctor
 // @route     POST /api/v1/doctors/auth/me
 // @access    Private
-exports.getMe = asyncHandler(async (req, res, next) => {
+getMe : asyncHandler(async (req, res, next) => {
   const doctor = await Doctor.findById(req.user.id);
 
   res.status(200).json({
     success: true,
     data: doctor
   });
-});
-
-
-// Get token from model, create cookie and send response
-const sendTokenResponse = (user, statusCode, res) => {
-  // Create token
-  const token = user.getSignedJwtToken();
-
-  const options = {
-    expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
-    ),
-    httpOnly: true
-  };
-
-  if (process.env.NODE_ENV === 'production') {
-    options.secure = true;
-  }
-
-  res
-    .status(statusCode)
-    .cookie('token', token, options)
-    .json({
-      success: true,
-      token
-    });
-};
+})
+}

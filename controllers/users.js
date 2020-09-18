@@ -1,30 +1,57 @@
-const ErrorResponse = require('../utils/errorResponse');
-const asyncHandler = require('../middleware/async');
-const User = require('../models/User');
-const crypto = require('crypto');
-const sendEmail = require('../utils/sendEmail');
+import ErrorResponse from '../utils/errorResponse.js';
+import asyncHandler from '../middleware/async.js';
+import User from '../models/User.js';
+import crypto from 'crypto';
+import sendEmail from '../utils/sendEmail.js';
 
+
+// Get token from model, create cookie and send response
+const sendTokenResponse = (user, statusCode, res) => {
+  // Create token
+  const token = user.getSignedJwtToken();
+
+  const options = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
+    ),
+    httpOnly: true
+  };
+
+  if (process.env.NODE_ENV === 'production') {
+    options.secure = true;
+  }
+
+  res
+    .status(statusCode)
+    .cookie('token', token, options)
+    .json({
+      success: true,
+      token
+    });
+};
+
+export default {
 
 // @desc      google register
 // @route     POST /api/v1/users/auth/oauth/google
 // @access    Public
-exports.googleRegister = asyncHandler(async (req, res, next) => {
+googleRegister : asyncHandler(async (req, res, next) => {
 
   sendTokenResponse(req.user, 200, res);
-});
+}),
 
 // @desc      facebook register
 // @route     POST /api/v1/users/auth/oauth/facebook
 // @access    Public
-exports.facebookRegister = asyncHandler(async (req, res, next) => {
+facebookRegister : asyncHandler(async (req, res, next) => {
  
   sendTokenResponse(req.user, 200, res);
-});
+}),
 
 // @desc      Register user
 // @route     POST /api/v1/users/auth/register
 // @access    Public
-exports.register = asyncHandler(async (req, res, next) => {
+register : asyncHandler(async (req, res, next) => {
   const { name, email, password , address , phone , dob} = req.body;
 
   // Create user
@@ -44,12 +71,12 @@ exports.register = asyncHandler(async (req, res, next) => {
   });
 
   sendTokenResponse(user, 200, res);
-});
+}),
 
 // @desc      Login user
 // @route     POST /api/v1/users/auth/login
 // @access    Public
-exports.login = asyncHandler(async (req, res, next) => {
+login : asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
 
   // Validate emil & password
@@ -74,12 +101,12 @@ exports.login = asyncHandler(async (req, res, next) => {
   }
 
   sendTokenResponse(user, 200, res);
-});
+}),
 
 // @desc      Log user out / clear cookie
 // @route     GET /api/v1/users/auth/logout
 // @access    Private
-exports.logout = asyncHandler(async (req, res, next) => {
+logout : asyncHandler(async (req, res, next) => {
   res.cookie('token', 'none', {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true
@@ -89,26 +116,26 @@ exports.logout = asyncHandler(async (req, res, next) => {
     success: true,
     data: {}
   });
-});
+}),
 
 // @desc      Get current logged in user
 // @route     POST /api/v1/users/auth/me
 // @access    Private
-exports.getMe = asyncHandler(async (req, res, next) => {
+getMe : asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.user.id);
 
   res.status(200).json({
     success: true,
     data: user
   });
-});
+}),
 
 // @desc      Update user details
 // @route     PUT /api/v1/users/auth/updatedetails
 // @access    Private
-exports.updateDetails = asyncHandler(async (req, res, next) => {
+updateDetails : asyncHandler(async (req, res, next) => {
   
-  var updateUserArgs = {
+  const updateUserArgs = {
     'local.name': req.body.name,
     'local.email': req.body.email,
     ...req.body
@@ -124,12 +151,12 @@ exports.updateDetails = asyncHandler(async (req, res, next) => {
     success: true,
     data: user
   });
-});
+}),
 
 // @desc      Update password
 // @route     PUT /api/v1/users/auth/updatepassword
 // @access    Private
-exports.updatePassword = asyncHandler(async (req, res, next) => {
+updatePassword : asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.user.id).select('+local.password');
   
   
@@ -143,12 +170,12 @@ exports.updatePassword = asyncHandler(async (req, res, next) => {
   await user.save();
 
   sendTokenResponse(user, 200, res);
-});
+}),
 
 // @desc      Forgot password
 // @route     POST /api/v1/users/auth/forgotpassword
 // @access    Public
-exports.forgotPassword = asyncHandler(async (req, res, next) => {
+forgotPassword : asyncHandler(async (req, res, next) => {
   const user = await User.findOne({ "local.email": req.body.email });
   
   
@@ -185,12 +212,12 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
 
     return next(new ErrorResponse('Email could not be sent', 500));
   }
-});
+}),
 
 // @desc      Reset password
 // @route     PUT /api/v1/users/auth/resetpassword/:resettoken
 // @access    Public
-exports.resetPassword = asyncHandler(async (req, res, next) => {
+resetPassword : asyncHandler(async (req, res, next) => {
   // Get hashed token
   const resetPasswordToken = crypto
     .createHash('sha256')
@@ -213,45 +240,45 @@ exports.resetPassword = asyncHandler(async (req, res, next) => {
   await user.save();
 
   sendTokenResponse(user, 200, res);
-});
+}),
 
 
 
 // @desc      Get all users
 // @route     GET /api/v1/users
 // @access    Private/Admin
-exports.getUsers = asyncHandler(async (req, res, next) => {
+getUsers : asyncHandler(async (req, res, next) => {
   res.status(200).json(res.advancedResults);
-});
+}),
 
 // @desc      Get single user
 // @route     GET /api/v1/users/:id
 // @access    Private/Admin
-exports.getUser = asyncHandler(async (req, res, next) => {
+getUser : asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.params.id);
 
   res.status(200).json({
     success: true,
     data: user
   });
-});
+}),
 
 // @desc      Create user
 // @route     POST /api/v1/users
 // @access    Private/Admin
-exports.createUser = asyncHandler(async (req, res, next) => {
+createUser : asyncHandler(async (req, res, next) => {
   const user = await User.create(req.body);
 
   res.status(201).json({
     success: true,
     data: user
   });
-});
+}),
 
 // @desc      Update user
 // @route     PUT /api/v1/users/:id
 // @access    Private/Admin
-exports.updateUser = asyncHandler(async (req, res, next) => {
+updateUser : asyncHandler(async (req, res, next) => {
   var updateUserArgs = {
     'local.name': req.body.name,
     'local.email': req.body.email,
@@ -268,41 +295,18 @@ exports.updateUser = asyncHandler(async (req, res, next) => {
     success: true,
     data: user
   });
-});
+}),
 
 // @desc      Delete user
 // @route     DELETE /api/v1/users/:id
 // @access    Private/Admin
-exports.deleteUser = asyncHandler(async (req, res, next) => {
+deleteUser : asyncHandler(async (req, res, next) => {
   await User.findByIdAndDelete(req.params.id);
 
   res.status(200).json({
     success: true,
     data: {}
   });
-});
+})
 
-// Get token from model, create cookie and send response
-const sendTokenResponse = (user, statusCode, res) => {
-  // Create token
-  const token = user.getSignedJwtToken();
-
-  const options = {
-    expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
-    ),
-    httpOnly: true
-  };
-
-  if (process.env.NODE_ENV === 'production') {
-    options.secure = true;
-  }
-
-  res
-    .status(statusCode)
-    .cookie('token', token, options)
-    .json({
-      success: true,
-      token
-    });
-};
+}

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const HomeTestSchema = new mongoose.Schema({
     patientName: {
@@ -50,4 +50,4 @@ const HomeTestSchema = new mongoose.Schema({
 // Prevent user from booking more than one appointment for specific doctor
 //AppointmentSchema.index({ doctor: 1, user: 1 }, { unique: true });
 
-module.exports = mongoose.model('HomeTest', HomeTestSchema);
+export default mongoose.model('HomeTest', HomeTestSchema);

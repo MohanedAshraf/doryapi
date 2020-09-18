@@ -1,8 +1,8 @@
-const mongoose = require('mongoose');
-const slugify = require('slugify');
-const geocoder = require('../utils/geocoder');
-const bcrypt = require("bcryptjs")
-const jwt = require("jsonwebtoken")
+import mongoose from 'mongoose';
+import slugify from 'slugify';
+import geocoder from '../utils/geocoder.js';
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 const DoctorSchema = new mongoose.Schema(
   {
@@ -117,7 +117,6 @@ const DoctorSchema = new mongoose.Schema(
     
   
   }
- 
 );
 // Encrypt password using bcrypt
 DoctorSchema.pre('save', async function(next) {
@@ -168,4 +167,4 @@ DoctorSchema.methods.matchPassword = async function(enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };
 
-module.exports = mongoose.model('Doctor', DoctorSchema);
+export default mongoose.model('Doctor', DoctorSchema);

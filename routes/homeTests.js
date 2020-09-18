@@ -1,33 +1,26 @@
-const express = require('express');
-const {
-  getHomeTests,
-  getHomeTest,
-  requestHomeTest,
-  updateHomeTest,
-  deleteHomeTest,
-  respondHomeTest
-} = require('../controllers/homeTests');
+import express from 'express';
+import homeTests from '../controllers/homeTests.js';
 
-const HomeTest = require('../models/HomeTest');
+import HomeTest from '../models/HomeTest.js';
 
 const router = express.Router({ mergeParams: true });
 
-const advancedResults = require('../middleware/advancedResults');
-const { protect, authorize } = require('../middleware/auth');
+import advancedResults from '../middleware/advancedResults.js';
+import { protect, authorize } from '../middleware/auth.js';
 
 router
   .route('/')
   .get(
     advancedResults(HomeTest),
-    getHomeTests
+    homeTests.getHomeTests
   )
-  .post(protect, authorize('user', 'admin'), requestHomeTest)
-  .put(protect, authorize('lab' , 'admin') ,respondHomeTest);
+  .post(protect, authorize('user', 'admin'), homeTests.requestHomeTest)
+  .put(protect, authorize('lab' , 'admin') , homeTests.respondHomeTest);
 
 router
   .route('/:id')
-  .get(getHomeTest)
-  .put(protect, authorize('lab', 'admin' ), updateHomeTest)
-  .delete(protect, authorize('lab', 'admin'), deleteHomeTest);
+  .get(homeTests.getHomeTest)
+  .put(protect, authorize('lab', 'admin' ), homeTests.updateHomeTest)
+  .delete(protect, authorize('lab', 'admin'), homeTests.deleteHomeTest);
 
-module.exports = router;
+export default router;

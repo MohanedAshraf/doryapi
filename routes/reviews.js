@@ -1,30 +1,25 @@
-const express = require('express');
-const {
-  getReviews,
-  getReview,
-  addReview,
-  updateReview,
-  deleteReview
-} = require('../controllers/reviews');
+import express from 'express';
+import reviews from '../controllers/reviews.js';
 
-const Review = require('../models/Review');
+import Review from '../models/Review.js';
 
 const router = express.Router({ mergeParams: true });
 
-const advancedResults = require('../middleware/advancedResults');
-const { protect, authorize } = require('../middleware/auth');
+import  advancedResults from '../middleware/advancedResults.js';
+import  { protect, authorize } from '../middleware/auth.js';
 
 router
   .route('/')
   .get(
     advancedResults(Review),
-    getReviews
+    reviews.getReviews
   )
-  .post(protect, authorize('user', 'admin'), addReview);
+  .post(protect, authorize('user', 'admin'), reviews.addReview);
 
 router
   .route('/:id')
-  .get(getReview)
-  .put(protect, authorize('user', 'admin'), updateReview)
-  .delete(protect, authorize('user', 'admin'), deleteReview);
-module.exports = router;
+  .get(reviews.getReview)
+  .put(protect, authorize('user', 'admin'), reviews.updateReview)
+  .delete(protect, authorize('user', 'admin'), reviews.deleteReview);
+
+export default router;

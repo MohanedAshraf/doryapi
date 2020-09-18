@@ -1,15 +1,17 @@
-const ErrorResponse = require('../utils/errorResponse');
-const asyncHandler = require('../middleware/async');
-const Appointment = require('../models/Appointment');
-const Schedule = require('../models/Schedule');
-const Doctor = require('../models/Doctor');
-const User = require('../models/User');
+import ErrorResponse from'../utils/errorResponse.js';
+import asyncHandler from'../middleware/async.js';
+import Appointment from'../models/Appointment.js';
+import Schedule from'../models/Schedule.js';
+import Doctor from'../models/Doctor.js';
+import User from'../models/User.js';
+
+export default {
 
 // @desc      Get appointments
 // @route     GET /api/v1/appointments
 // @route     GET /api/v1/users/:userId/appointments
 // @access    Public
-exports.getAppointments = asyncHandler(async (req, res, next) => {
+getAppointments : asyncHandler(async (req, res, next) => {
     if(req.params.userId){
       const appointments = await Appointment.find({ user: req.params.userId });
   
@@ -24,12 +26,12 @@ exports.getAppointments = asyncHandler(async (req, res, next) => {
      else {
       res.status(200).json(res.advancedResults);
     }
-  });
+  }),
 
 // @desc      Get single appointment
 // @route     GET /api/v1/appointmens/:id
 // @access    Public
-exports.getAppointment = asyncHandler(async (req, res, next) => {
+getAppointment : asyncHandler(async (req, res, next) => {
     const appointment = await Appointment.findById(req.params.id);
     const schedule = await Schedule.findById(appointment.schedule);
   
@@ -47,12 +49,12 @@ exports.getAppointment = asyncHandler(async (req, res, next) => {
       }
 
     });
-  });
+  }),
 
 // @desc      Delete appointment
 // @route     DELETE /api/v1/appointments/:id
 // @access    Private
-exports.deleteAppointment = asyncHandler(async (req, res, next) => {
+deleteAppointment : asyncHandler(async (req, res, next) => {
     const appointment = await Appointment.findById(req.params.id);
   
     if (!appointment) {
@@ -72,12 +74,12 @@ exports.deleteAppointment = asyncHandler(async (req, res, next) => {
       success: true,
       data: {}
     });
-  });
+  }),
   
   // @desc      Update appointment 
   // @route     PUT /api/v1/appointments/:id
   // @access    Private
-  exports.updateAppointment = asyncHandler(async (req, res, next) => {
+  updateAppointment : asyncHandler(async (req, res, next) => {
    let appointment = await Appointment.findById(req.params.id);
   
     if (!appointment) {
@@ -100,12 +102,12 @@ exports.deleteAppointment = asyncHandler(async (req, res, next) => {
       success: true,
       data: appointment 
     });
-  });
+  }),
 
 // @desc      Book appointment
 // @route     POST /api/v1/schedules/:scheduleId/appointments
 // @access    Private 
-exports.bookAppointment = asyncHandler(async (req, res, next) => {
+ bookAppointment : asyncHandler(async (req, res, next) => {
     req.body.user = req.user.id;
     req.body.schedule = req.params.scheduleId;
   
@@ -132,13 +134,13 @@ exports.bookAppointment = asyncHandler(async (req, res, next) => {
       schedule : schedule
 
     });
-  });
+  }),
   
  
   // @desc      SCAN appointment by QR code
   // @route     PUT /api/v1/doctors/appointments/:appointmentId/qr
   // @access    Private (doctor)
-  exports.scanAppointmentByQR = asyncHandler(async (req, res, next) => {
+  scanAppointmentByQR : asyncHandler(async (req, res, next) => {
   
     let doctor = await Doctor.findById(req.user.id);
   
@@ -180,4 +182,5 @@ exports.bookAppointment = asyncHandler(async (req, res, next) => {
        doctor ,
        schedule
     });
-  });
+  })
+}

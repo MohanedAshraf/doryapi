@@ -1,30 +1,21 @@
-const express = require('express');
-const path = require('path');
-const multer = require("multer");
+import express from 'express';
+import path ,{dirname} from 'path';
+import { fileURLToPath } from 'url';
+ const __dirname = dirname(fileURLToPath(import.meta.url));
+import multer from "multer";
 
-const {
-  getLabs,
-  getLab,
-  createLab,
-  updateLab,
-  deleteLab,
-  getLabsInRadius,
-  labPhotoUpload,
-  login ,
-  register , 
-  logout, getMe
-} = require('../controllers/labs');
-const Lab = require('../models/Lab');
+import labs from '../controllers/labs.js';
+import Lab from '../models/Lab.js';
 
 
 // Include other resource routers
-const reviewRouter = require('./reviews');
-const homeTestRouter = require('./homeTests');
+import reviewRouter from './reviews.js';
+import homeTestRouter from './homeTests.js';
 
 const router = express.Router();
 
-const advancedResults = require('../middleware/advancedResults');
-const { protect, authorize } = require('../middleware/auth');
+import advancedResults from '../middleware/advancedResults.js';
+import { protect, authorize } from '../middleware/auth.js';
 
 // Re-route into other resource routers
 router.use('/:labId/reviews', reviewRouter);
@@ -43,25 +34,25 @@ router
         }
     })
   
-  }).single("file") , labPhotoUpload); 
+  }).single("file") , labs.labPhotoUpload); 
 
-router.route('/radius/:latitude/:longitude/:distance').get(getLabsInRadius);
+router.route('/radius/:latitude/:longitude/:distance').get(labs.getLabsInRadius);
 
 router
   .route('/')
-  .get(advancedResults(Lab), getLabs)
-  .post(protect, authorize('admin'), createLab);
+  .get(advancedResults(Lab), labs.getLabs)
+  .post(protect, authorize('admin'), labs.createLab);
 
 router
   .route('/:id')
-  .get(getLab)
-  .put(protect,  authorize('admin', 'lab'), updateLab)
-  .delete(protect, authorize('admin'), deleteLab);
+  .get(labs.getLab)
+  .put(protect,  authorize('admin', 'lab'), labs.updateLab)
+  .delete(protect, authorize('admin'), labs.deleteLab);
 
-  router.post('/auth/register', register);
-  router.post('/auth/login', login);
-  router.get('/auth/logout', protect , authorize('lab') , logout);
-  router.get('/auth/me', protect,authorize("admin" ,"lab"), getMe);
+  router.post('/auth/register', labs.register);
+  router.post('/auth/login', labs.login);
+  router.get('/auth/logout', protect , authorize('lab') , labs.logout);
+  router.get('/auth/me', protect,authorize("admin" ,"lab"), labs.getMe);
 
 
-module.exports = router; 
+export default router; 

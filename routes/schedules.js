@@ -1,21 +1,15 @@
-const express = require('express');
-const {
-  getSchedules,
-  getSchedule,
-  addSchedule,
-  updateSchedule,
-  deleteSchedule,
-} = require('../controllers/schedules');
-const Schedule = require('../models/Schedule');
+import express from'express';
+import schedules from'../controllers/schedules.js';
+import Schedule from'../models/Schedule.js';
 
 
 // Include other resource routers
-const appointmentRouter = require('./appointments');
+import appointmentRouter from'./appointments.js';
 
 const router = express.Router({ mergeParams: true });
 
-const advancedResults = require('../middleware/advancedResults');
-const { protect, authorize } = require('../middleware/auth');
+import advancedResults from'../middleware/advancedResults.js';
+import { protect, authorize } from'../middleware/auth.js';
 
 // Re-route into other resource routers
 router.use('/:scheduleId/appointments', appointmentRouter);
@@ -24,14 +18,14 @@ router
   .route('/')
   .get(
     advancedResults(Schedule),
-    getSchedules
+    schedules.getSchedules
   )
-  .post(protect, authorize('doctor','admin') , addSchedule)
+  .post(protect, authorize('doctor','admin') , schedules.addSchedule)
 
   router
   .route('/:id')
-  .get(getSchedule)
-  .put(protect, authorize('doctor','admin') , updateSchedule)
-  .delete(protect, authorize('admin' , 'doctor'), deleteSchedule);
+  .get(schedules.getSchedule)
+  .put(protect, authorize('doctor','admin') , schedules.updateSchedule)
+  .delete(protect, authorize('admin' , 'doctor'), schedules.deleteSchedule);
   
-module.exports = router; 
+export default router; 

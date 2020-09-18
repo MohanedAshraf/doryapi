@@ -1,8 +1,8 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const RoomSchema = new mongoose.Schema({
 
-    userIds: Array,
+    userIds: [mongoose.Schema.Types.ObjectId],
     chatInitiator: String,
   },
   {
@@ -70,4 +70,4 @@ RoomSchema.statics.initiateChat = async function (userIds, chatInitiator) {
   }
 }
 
-module.exports = mongoose.model("Room", RoomSchema);
+export default mongoose.model("Room", RoomSchema);

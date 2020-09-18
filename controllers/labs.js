@@ -1,24 +1,51 @@
-const path = require('path');
-const zipcodes = require('zipcodes');
-const ErrorResponse = require('../utils/errorResponse');
-const asyncHandler = require('../middleware/async');
-const geocoder = require('../utils/geocoder');
-const Lab = require('../models/Lab');
+import path from'path';
+import zipcodes from'zipcodes';
+import ErrorResponse from'../utils/errorResponse.js';
+import asyncHandler from'../middleware/async.js';
+import geocoder from'../utils/geocoder.js';
+import Lab from'../models/Lab.js';
 
+
+// Get token from model, create cookie and send response
+const sendTokenResponse = (user, statusCode, res) => {
+  // Create token
+  const token = user.getSignedJwtToken();
+
+  const options = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
+    ),
+    httpOnly: true
+  };
+
+  if (process.env.NODE_ENV === 'production') {
+    options.secure = true;
+  }
+
+  res
+    .status(statusCode)
+    .cookie('token', token, options)
+    .json({
+      success: true,
+      token
+    });
+};
+
+export default {
 
 // @desc    Get all Labs
 // @route   GET /api/v1/labs
 // @access  Public
 
-exports.getLabs = asyncHandler(async (req, res, next) => {
+getLabs : asyncHandler(async (req, res, next) => {
   res.status(200).json(res.advancedResults);
-});
+}),
 
 // @desc    Get single Labs
 // @route   GET /api/v1/labs/:id
 // @access  Public
 
-exports.getLab = asyncHandler(async (req, res, next) => {
+getLab : asyncHandler(async (req, res, next) => {
   const lab = await Lab.findById(req.params.id);
   if (!lab) {
     return next(
@@ -32,13 +59,13 @@ exports.getLab = asyncHandler(async (req, res, next) => {
     success: true,
     data: lab
   });
-});
+}),
 
 // @desc    Create new Lab
 // @route   POST /api/v1/labs
 // @access  Private
 
-exports.createLab = asyncHandler(async (req, res, next) => {
+createLab : asyncHandler(async (req, res, next) => {
   // Add user to req,body
   req.body.user = req.user.id;
 
@@ -57,13 +84,13 @@ exports.createLab = asyncHandler(async (req, res, next) => {
     success: true,
     data: lab 
   });
-});
+}),
 
 // @desc    Update lab
 // @route   PUT /api/v1/labs/:id
 // @access  Private
 
-exports.updateLab = asyncHandler(async (req, res, next) => {
+updateLab : asyncHandler(async (req, res, next) => {
   let lab = await Lab.findById(req.params.id, req.body);
   if (!lab) {
     return next(
@@ -93,13 +120,13 @@ exports.updateLab = asyncHandler(async (req, res, next) => {
     success: true,
     data: lab
   });
-});
+}),
 
 // @desc    Delete lab
 // @route   DELETE /api/v1/labs/:id
 // @access  Private
 
-exports.deleteLab = asyncHandler(async (req, res, next) => {
+deleteLab : asyncHandler(async (req, res, next) => {
   const lab = await Lab.findById(req.params.id);
 
   if (!lab) {
@@ -127,13 +154,13 @@ exports.deleteLab = asyncHandler(async (req, res, next) => {
     success: true,
     data: {}
   });
-});
+}),
 
 
 // @desc      Get labs within a radius
 // @route     GET /api/v1/labs/radius/:latitude/:longitude/:distance
 // @access    Private
-exports.getLabsInRadius = asyncHandler(async (req, res, next) => {
+getLabsInRadius : asyncHandler(async (req, res, next) => {
   const { longitude , latitude , distance } = req.params;
  
 
@@ -151,12 +178,12 @@ exports.getLabsInRadius = asyncHandler(async (req, res, next) => {
     count: labs.length,
     data: labs
   });
-});
+}),
 
 // @desc      Upload photo for lab
 // @route     PUT /api/v1/labs/:id/photo
 // @access    Private
-exports.labPhotoUpload = asyncHandler(async (req, res, next) => {
+labPhotoUpload : asyncHandler(async (req, res, next) => {
   const lab = await Lab.findById(req.params.id);
 
   if (!lab) {
@@ -211,13 +238,13 @@ exports.labPhotoUpload = asyncHandler(async (req, res, next) => {
       success: true,
       data: file.filename
     });
-  });
+  }),
 //});
 
 // @desc      Register lab
 // @route     POST /api/v1/labs/auth/register
 // @access    Public
-exports.register = asyncHandler(async (req, res, next) => {
+register : asyncHandler(async (req, res, next) => {
  //console.log(req.body);
   
   // Create lab
@@ -225,12 +252,12 @@ exports.register = asyncHandler(async (req, res, next) => {
   console.log(lab);
 
   sendTokenResponse(lab, 200, res);
-});
+}),
 
 // @desc      Login lab
 // @route     POST /api/v1/labs/auth/login
 // @access    Public
-exports.login = asyncHandler(async (req, res, next) => {
+login : asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
 
   // Validate emil & password
@@ -255,12 +282,12 @@ exports.login = asyncHandler(async (req, res, next) => {
   }
 
   sendTokenResponse(lab, 200, res);
-});
+}),
 
 // @desc      Log user out / clear cookie
 // @route     GET /api/v1/labs/auth/logout
 // @access    Private
-exports.logout = asyncHandler(async (req, res, next) => {
+logout : asyncHandler(async (req, res, next) => {
   res.cookie('token', 'none', {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true
@@ -270,43 +297,19 @@ exports.logout = asyncHandler(async (req, res, next) => {
     success: true,
     data: {}
   });
-});
+}),
 
 // @desc      Get current logged in lab
 // @route     GET /api/v1/labs/auth/me
 // @access    Private
-exports.getMe = asyncHandler(async (req, res, next) => {
+getMe : asyncHandler(async (req, res, next) => {
   const lab = await Lab.findById(req.user.id);
 
   res.status(200).json({
     success: true,
     data: lab
   });
-});
+})
 
 
-// Get token from model, create cookie and send response
-const sendTokenResponse = (user, statusCode, res) => {
-  // Create token
-  const token = user.getSignedJwtToken();
-  console.log(token);
-
-  const options = {
-    expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
-    ),
-    httpOnly: true
-  };
-
-  if (process.env.NODE_ENV === 'production') {
-    options.secure = true;
-  }
-
-  res
-    .status(statusCode)
-    .cookie('token', token, options)
-    .json({
-      success: true,
-      token
-    });
-};
+}

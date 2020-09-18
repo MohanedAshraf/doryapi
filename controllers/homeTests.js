@@ -1,15 +1,17 @@
-const ErrorResponse = require('../utils/errorResponse');
-const asyncHandler = require('../middleware/async');
-const HomeTest = require('../models/HomeTest');
-const Lab = require('../models/Lab');
-const User = require('../models/User');
+import ErrorResponse from '../utils/errorResponse.js';
+import asyncHandler from '../middleware/async.js';
+import HomeTest from '../models/HomeTest.js';
+import Lab from '../models/Lab.js';
+import User from '../models/User.js';
+
+export default {
 
 // @desc      Get homeTests
 // @route     GET /api/v1/homeTests
 // @route     GET /api/v1/labs/:labId/homeTests
 // @route     GET /api/v1/users/:userId/homeTests
 // @access    Public
-exports.getHomeTests = asyncHandler(async (req, res, next) => {
+getHomeTests : asyncHandler(async (req, res, next) => {
   if (req.params.labId) {
     const homeTests = await HomeTest.find({ lab: req.params.labId });
 
@@ -31,12 +33,12 @@ exports.getHomeTests = asyncHandler(async (req, res, next) => {
    else {
     res.status(200).json(res.advancedResults);
   }
-});
+}),
 
 // @desc      Get single homeTest
 // @route     GET /api/v1/homeTests/:id
 // @access    Public
-exports.getHomeTest = asyncHandler(async (req, res, next) => {
+getHomeTest : asyncHandler(async (req, res, next) => {
   const homeTest = await HomeTest.findById(req.params.id);
 
   if (!homeTest) {
@@ -49,12 +51,12 @@ exports.getHomeTest = asyncHandler(async (req, res, next) => {
     success: true,
     data: homeTest
   });
-});
+}),
 
 // @desc      Request a homeTest
 // @route     POST /api/v1/labs/:labId/homeTests
 // @access    Private
-exports.requestHomeTest = asyncHandler(async (req, res, next) => {
+requestHomeTest : asyncHandler(async (req, res, next) => {
   req.body.lab = req.params.labId;
  
 
@@ -76,12 +78,12 @@ exports.requestHomeTest = asyncHandler(async (req, res, next) => {
     success: true,
     data: homeTest
   });
-});
+}),
 
 // @desc      Respond to HomeTest
 // @route     PUT /api/v1/labs/:labId/homeTests/:homeTestId
 // @access    Private
-exports.respondHomeTest = asyncHandler(async (req, res, next) => {
+respondHomeTest : asyncHandler(async (req, res, next) => {
   req.body.user = req.user.id;
  
 
@@ -118,13 +120,13 @@ exports.respondHomeTest = asyncHandler(async (req, res, next) => {
     success: true,
     data: homeTest
   });
-});
+}),
 
 
 // @desc      Update homeTest
 // @route     PUT /api/v1/homeTests/:id
 // @access    Private
-exports.updateHomeTest= asyncHandler(async (req, res, next) => {
+updateHomeTest : asyncHandler(async (req, res, next) => {
   let homeTest = await HomeTest.findById(req.params.id);
 
   if (!homeTest) {
@@ -147,12 +149,12 @@ exports.updateHomeTest= asyncHandler(async (req, res, next) => {
     success: true,
     data: homeTest
   });
-});
+}),
 
 // @desc      Delete homeTest
 // @route     DELETE /api/v1/homeTests/:id
 // @access    Private
-exports.deleteHomeTest = asyncHandler(async (req, res, next) => {
+deleteHomeTest : asyncHandler(async (req, res, next) => {
   const homeTests = await HomeTest.findById(req.params.id);
 
   if (!homeTests) {
@@ -172,4 +174,6 @@ exports.deleteHomeTest = asyncHandler(async (req, res, next) => {
     success: true,
     data: {}
   });
-});
+})
+
+}

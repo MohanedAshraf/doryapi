@@ -1,14 +1,16 @@
-const ErrorResponse = require('../utils/errorResponse');
-const asyncHandler = require('../middleware/async');
-const Schedule = require('../models/Schedule');
-const Doctor = require('../models/Doctor');
-const User = require('../models/User');
+import  ErrorResponse from '../utils/errorResponse.js';
+import  asyncHandler from '../middleware/async.js';
+import  Schedule from '../models/Schedule.js';
+import  Doctor from '../models/Doctor.js';
+import  User from '../models/User.js';
+
+export default {
 
 // @desc      Get schedules
 // @route     GET /api/v1/schedules
 // @route     GET /api/v1/doctors/:doctorId/schedules
 // @access    Public
-exports.getSchedules = asyncHandler(async (req, res, next) => {
+getSchedules : asyncHandler(async (req, res, next) => {
   if (req.params.doctorId) {
     const schedules = await Schedule.find({ doctor: req.params.doctorId });
 
@@ -21,12 +23,12 @@ exports.getSchedules = asyncHandler(async (req, res, next) => {
    else {
     res.status(200).json(res.advancedResults);
   }
-});
+}),
 
 // @desc      Get single schedule
 // @route     GET /api/v1/schedules/:id
 // @access    Public
-exports.getSchedule = asyncHandler(async (req, res, next) => {
+getSchedule : asyncHandler(async (req, res, next) => {
   const schedule = await Schedule.findById(req.params.id);
 
   if (!schedule) {
@@ -39,12 +41,12 @@ exports.getSchedule = asyncHandler(async (req, res, next) => {
     success: true,
     data: schedule
   });
-});
+}),
 
 // @desc      Add schedule
 // @route     POST /api/v1/doctors/schedules
 // @access    Private
-exports.addSchedule = asyncHandler(async (req, res, next) => {
+addSchedule : asyncHandler(async (req, res, next) => {
   req.body.doctor = req.user.id;
  
 
@@ -75,12 +77,12 @@ exports.addSchedule = asyncHandler(async (req, res, next) => {
     success: true,
     data: schedules
   });
-});
+}),
 
   // @desc      Update schedule
   // @route     PUT /api/v1/schedules/:id
   // @access    Private
-  exports.updateSchedule = asyncHandler(async (req, res, next) => {
+  updateSchedule : asyncHandler(async (req, res, next) => {
     let schedule = await Schedule.findById(req.params.id);
   
     if (!schedule) {
@@ -103,12 +105,12 @@ exports.addSchedule = asyncHandler(async (req, res, next) => {
       success: true,
       data: schedule
     });
-  });
+  }),
   
   // @desc      Delete schedule
   // @route     DELETE /api/v1/schedules/:id
   // @access    Private
-  exports.deleteSchedule = asyncHandler(async (req, res, next) => {
+  deleteSchedule : asyncHandler(async (req, res, next) => {
     const schedule = await Schedule.findById(req.params.id);
   
     if (!schedule) {
@@ -128,5 +130,6 @@ exports.addSchedule = asyncHandler(async (req, res, next) => {
       success: true,
       data: {}
     });
-  });
+  })
   
+}

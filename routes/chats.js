@@ -1,19 +1,13 @@
-const express = require('express');
-const {
-  initiateChatRoom,
-  postMessage ,
-  getConversationByRoomId,
-  getRecentConversation,
-  markConversationReadByRoomId
-} = require('../controllers/chats');
+import express from 'express';
+import chats from '../controllers/chats.js';
 
 const router = express.Router();
-const { protect } = require('../middleware/auth');
+import { protect } from '../middleware/auth.js';
 router
-  .get('/', protect , getRecentConversation)
-  .get('/:roomId', protect, getConversationByRoomId)
-  .post('/initiate', protect ,initiateChatRoom)
-  .post('/:roomId/message', protect , postMessage)
-  .put('/:roomId/mark-read', protect , markConversationReadByRoomId)
+  .get('/', protect , chats.getRecentConversation)
+  .get('/:roomId', protect, chats.getConversationByRoomId)
+  .post('/initiate', protect , chats.initiateChatRoom)
+  .post('/:roomId/message', protect , chats.postMessage)
+  .put('/:roomId/mark-read', protect , chats.markConversationReadByRoomId)
 
-  module.exports = router;
+  export default router ;

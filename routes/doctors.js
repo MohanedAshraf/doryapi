@@ -1,34 +1,24 @@
-const express = require('express');
-const path = require('path');
-const multer = require("multer");
+import express from 'express';
+import multer from "multer";
 
-const {
-  getDoctors,
-  getDoctor,
-  createDoctor,
-  updateDoctor,
-  deleteDoctors,
-  getDoctorsInRadius,
-  doctorPhotoUpload,
-  doctorPhotoRetrieve,
-  login ,
-  register , 
-  logout,
-  getMe
-} = require('../controllers/doctors');
+import path ,{dirname} from 'path';
+import { fileURLToPath } from 'url';
+ const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const Doctor = require('../models/Doctor');
+import doctors from '../controllers/doctors.js';
+
+import Doctor from '../models/Doctor.js';
 
 
 // Include other resource routers
-const reviewRouter = require('./reviews');
-const scheduleRouter = require('./schedules');
-const appointmentRouter = require('./appointments');
+import reviewRouter from './reviews.js';
+import scheduleRouter from './schedules.js';
+import appointmentRouter from './appointments.js';
 
 const router = express.Router();
 
-const advancedResults = require('../middleware/advancedResults');
-const { protect, authorize } = require('../middleware/auth');
+import advancedResults from '../middleware/advancedResults.js';
+import { protect, authorize } from '../middleware/auth.js';
 
 // Re-route into other resource routers
 router.use('/:doctorId/reviews', reviewRouter);
@@ -39,7 +29,7 @@ router.use('/appointments/:appointmentId/qr', appointmentRouter);
 
 router
   .route('/:id/photo')
-  .get(doctorPhotoRetrieve)
+  .get(doctors.doctorPhotoRetrieve)
   .put(protect , authorize('admin' , 'doctor'),multer({
     storage : multer.diskStorage({
         destination : (req , file  , cb) =>{
@@ -50,27 +40,27 @@ router
         }
     })
   
-  }).single("file") , doctorPhotoUpload);
+  }).single("file") , doctors.doctorPhotoUpload);
   
 
-router.route('/radius/:latitude/:longitude/:distance').get(getDoctorsInRadius);
+router.route('/radius/:latitude/:longitude/:distance').get(doctors.getDoctorsInRadius);
 
 router
   .route('/')
-  .get(advancedResults(Doctor), getDoctors)
-  .post(protect, authorize('admin'), createDoctor);
+  .get(advancedResults(Doctor), doctors.getDoctors)
+  .post(protect, authorize('admin'), doctors.createDoctor);
 
 router
   .route('/:id')
-  .get(getDoctor)
-  .put(protect,  authorize('admin', 'doctor'), updateDoctor)
-  .delete(protect, authorize('admin'), deleteDoctors);
+  .get(doctors.getDoctor)
+  .put(protect,  authorize('admin', 'doctor'), doctors.updateDoctor)
+  .delete(protect, authorize('admin'), doctors.deleteDoctors);
 
-  router.post('/auth/register', register);
-  router.post('/auth/login', login);
-  router.get('/auth/logout', protect , authorize('doctor') , logout);
-  router.get('/auth/me', protect,authorize("admin" ,"doctor"), getMe);
+  router.post('/auth/register', doctors.register);
+  router.post('/auth/login', doctors.login);
+  router.get('/auth/logout', protect , authorize('doctor') , doctors.logout);
+  router.get('/auth/me', protect,authorize("admin" ,"doctor"), doctors.getMe);
 
   
 
-module.exports = router; 
+export default router; 

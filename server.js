@@ -1,44 +1,47 @@
-const path = require('path');
-const http = require("http");
-const express = require('express');
-const socketio = require("socket.io");
-const dotenv = require('dotenv');
-const morgan = require('morgan');
-const colors = require('colors');
-const cookieParser = require('cookie-parser');
-const mongoSanitize = require('express-mongo-sanitize');
-const helmet = require('helmet');
-const xss = require('xss-clean');
-const rateLimit = require('express-rate-limit');
-const hpp = require('hpp');
-const cors = require('cors');
+import path ,{dirname} from 'path';
+import { fileURLToPath } from 'url';
+ const __dirname = dirname(fileURLToPath(import.meta.url));
+import http  from "http";
+import express  from 'express';
+import socketio  from "socket.io";
+import morgan  from 'morgan';
+import colors  from 'colors';
+import cookieParser  from 'cookie-parser';
+import mongoSanitize  from 'express-mongo-sanitize';
+import helmet  from 'helmet';
+import xss  from 'xss-clean';
+import rateLimit  from 'express-rate-limit';
+import hpp  from 'hpp';
+import cors  from 'cors';
+
+// Load env vars
+import  './utils/env.js'
 
 
 // socket configuration
-const webSockets = require("./utils/webSockets.js");
+import WebSockets from "./utils/webSockets.js";
 
 
-const errorHandler = require('./middleware/error');
+import errorHandler  from './middleware/error.js';
 // DB configuration 
-const connectDB = require('./config/db');
+import connectDB  from './config/db.js';
 
 
-// Load env vars
-dotenv.config({ path: './config/config.env' });
+
 
 // Connect to database
 connectDB();
 
 // Route files
 
-const users = require('./routes/users');
-const doctors = require('./routes/doctors');
-const reviews = require('./routes/reviews');
-const appointments = require('./routes/appointments');
-const labs = require('./routes/labs');
-const homeTests = require('./routes/homeTests');
-const schedules = require('./routes/schedules');
-const chats = require('./routes/chats');
+import users  from './routes/users.js';
+import doctors  from './routes/doctors.js';
+import reviews  from './routes/reviews.js';
+import appointments  from './routes/appointments.js';
+import labs  from './routes/labs.js';
+import homeTests from './routes/homeTests.js';
+import schedules  from './routes/schedules.js';
+import chats  from './routes/chats.js';
 
 
 const app = express();
@@ -82,6 +85,7 @@ app.use(cors());
 // Set static folder
 app.use(express.static(path.join(__dirname, 'public')));
 
+ 
 // Mount routers
 
 app.use('/api/v1/users', users);
@@ -101,7 +105,8 @@ const server = http.createServer(app);
 
 /** Create socket connection */
 global.io = socketio.listen(server);
-global.io.on('connection', webSockets.connection)
+global.io.on('connection', WebSockets.connection);
+
 
 server.listen(
   PORT,
@@ -109,7 +114,7 @@ server.listen(
     `Server running in ${process.env.NODE_ENV} mode on port ${PORT}`.yellow.bold
   )
 );
-
+ 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err, promise) => {
   console.log(`Error: ${err.message}`.red);

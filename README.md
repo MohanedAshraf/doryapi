@@ -1,13 +1,15 @@
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e18889a4eda14c14b99db048718e411a)](https://app.codacy.com/manual/aman-atg/Job-Listing-Demo-Site?utm_source=github.com&utm_medium=referral&utm_content=aman-atg/Job-Listing-Demo-Site&utm_campaign=Badge_Grade_Dashboard)
+![Maintained](https://img.shields.io/maintenance/yes/2020)
 [![MIT License][license-shield]][license-url]
 
 <!-- PROJECT LOGO -->
 <br />
 <p align="center">
   <a href="https://doryapi.herokuapp.com">
-    <img src="public/logo.png" alt="Logo" width="80" height="80">
+    <img src="public/favicon-32x32.png" alt="Logo" width="80" height="80">
   </a>
 
   <h3 align="center">Dory </h3>
@@ -45,7 +47,7 @@
 
 ## About The Project :eyes: 
 
-An API for Dory App , Dory is an Online Medical Booking App It allows the patient to book appointments , search for doctors and labs  , chat with Doctors and Request Home consultations or Home tests .
+An API for Dory App , Dory is an Online Medical Booking App It allows the patient to book Appointments , search for Doctors and Labs  , chat with Doctors and Request Home Consultation or Home Test .
 
 
 ### Built With :hammer:
@@ -67,23 +69,25 @@ To get a local copy up and running follow these simple example steps.
 
 ### Installation :arrow_down: 
 
-**1.** Fork [this](https://github.com/aman-atg/doryapi) repository :fork_and_knife:
+**1.** Fork [this](https://github.com/aman-atg/Dory-API) repository :fork_and_knife:
 
 **2.** Clone your forked repository to your local system :busts_in_silhouette:
 
 ```sh
-git clone https://github.com/<your-username>/doryapi.git
+git clone https://github.com/<your-username>//Dory-API.git
 ```
 
 Or Download and extract the zip file.
 
  ### Environmental Variables
 
- You need to make your own `config\config.env` with the following structure.
+ For developers, you can directly use our `config.env.env` located in `config\config.env.env` or modify it if you like.
+
+ For production, you need to make your own `config\config.env` with the following structure.
  
  ```json
 
-  NODE_ENV=development
+  NODE_ENV=production
   PORT=5000
 
   MONGO_URI=mongodb://localhost:27017/YourCollection
@@ -167,11 +171,11 @@ Distributed under the MIT License. See [`LICENSE`][license-url] for more informa
 
   <!-- MARKDOWN LINKS & IMAGES -->
 
-[forks-shield]: https://img.shields.io/github/forks/MohanedAshraf/doryapi?style=flat-square
-[forks-url]: https://github.com/MohanedAshraf/doryapi/network/members
-[stars-shield]: https://img.shields.io/github/stars/MohanedAshraf/doryapi?style=flat-square
-[stars-url]: https://github.com/MohanedAshraf/doryapi/stargazers
-[issues-shield]: https://img.shields.io/github/issues/MohanedAshraf/doryapi?style=flat-square
-[issues-url]: https://github.com/MohanedAshraf/doryapi/issues
-[license-shield]: https://img.shields.io/github/license/MohanedAshraf/doryapi?style=flat-square
-[license-url]: https://github.com/MohanedAshraf/doryapi/blob/master/LICENSE
+[forks-shield]: https://img.shields.io/github/forks/MohanedAshraf/Dory-API?style=flat-square
+[forks-url]: https://github.com/MohanedAshraf/Dory-API/network/members
+[stars-shield]: https://img.shields.io/github/stars/MohanedAshraf/Dory-API?style=flat-square
+[stars-url]: https://github.com/MohanedAshraf/Dory-API/stargazers
+[issues-shield]: https://img.shields.io/github/issues/MohanedAshraf/Dory-API?style=flat-square
+[issues-url]: https://github.com/MohanedAshraf/Dory-API/issues
+[license-shield]: https://img.shields.io/github/license/MohanedAshraf/Dory-API?style=flat-square
+[license-url]: https://github.com/MohanedAshraf/Dory-API/blob/master/LICENSE

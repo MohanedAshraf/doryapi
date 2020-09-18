@@ -1,59 +1,43 @@
-const express = require('express');
-const {
-  getUsers,
-  getUser,
-  createUser,
-  updateUser,
-  deleteUser,
-  register,
-  login,
-  logout,
-  getMe,
-  forgotPassword,
-  resetPassword,
-  updateDetails,
-  updatePassword,
-  googleRegister,
-  facebookRegister
-} = require('../controllers/users');
-const passport = require("passport");
-const passportConf = require("../passport");
+import express from'express';
+import users from'../controllers/users.js';
+import passport from"passport";
+import "../passport.js";
 
-const User = require('../models/User');
+import User from'../models/User.js';
 
 const router = express.Router({ mergeParams: true });
 
-const advancedResults = require('../middleware/advancedResults');
-const { protect, authorize } = require('../middleware/auth');
+import advancedResults from'../middleware/advancedResults.js';
+import { protect, authorize } from'../middleware/auth.js';
 
 // Include other resource routers
-const appointmentRouter = require('./appointments');
+import appointmentRouter from'./appointments.js';
 
 // Re-route into other resource routers
 router.use('/:userId/appointments', appointmentRouter);
 
 router
   .route('/')
-  .get(protect,authorize('admin'),advancedResults(User), getUsers)
-  .post(protect,authorize('admin'),createUser);
+  .get(protect,authorize('admin'),advancedResults(User), users.getUsers)
+  .post(protect,authorize('admin'),users.createUser);
 
 router
   .route('/:id')
-  .get(protect,authorize('admin'),getUser)
-  .put(protect,authorize('admin'),updateUser)
-  .delete(protect,authorize('admin'),deleteUser);
+  .get(protect,authorize('admin'),users.getUser)
+  .put(protect,authorize('admin'),users.updateUser)
+  .delete(protect,authorize('admin'),users.deleteUser);
 
   //auth
 
-  router.post('/auth/register', register);
-  router.post('/auth/login', login);
-  router.get('/auth/logout', protect , authorize('user') , logout);
-  router.get('/auth/me', protect,authorize("admin" ,"user"), getMe);
-  router.put('/auth/updatedetails', protect,authorize("admin" ,"user"), updateDetails);
-  router.put('/auth/updatepassword', protect,authorize("admin" ,"user"), updatePassword);
-  router.post('/auth/forgotpassword', forgotPassword);
-  router.put('/auth/resetpassword/:resettoken', resetPassword);
-  router.post('/auth/oauth/google', passport.authenticate("googleToken" , {session:false}) , googleRegister);
-  router.post('/auth/oauth/facebook', passport.authenticate("facebookToken" , {session:false}) , facebookRegister);
+  router.post('/auth/register', users.register);
+  router.post('/auth/login', users.login);
+  router.get('/auth/logout', protect , authorize('user') , users.logout);
+  router.get('/auth/me', protect,authorize("admin" ,"user"), users.getMe);
+  router.put('/auth/updatedetails', protect,authorize("admin" ,"user"), users.updateDetails);
+  router.put('/auth/updatepassword', protect,authorize("admin" ,"user"), users.updatePassword);
+  router.post('/auth/forgotpassword', users.forgotPassword);
+  router.put('/auth/resetpassword/:resettoken', users.resetPassword);
+  router.post('/auth/oauth/google', passport.authenticate("googleToken" , {session:false}) , users.googleRegister);
+  router.post('/auth/oauth/facebook', passport.authenticate("facebookToken" , {session:false}) , users.facebookRegister);
   
-module.exports = router;
+export default router;
